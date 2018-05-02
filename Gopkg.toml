@@ -63,3 +63,7 @@
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   revision = "e4d366fc3c7938e2958e662b4258c7a89e1f0e3e"
+
+[[constraint]]
+  name = "github.com/aws/aws-sdk-go"
+  version = "1.13.39"
