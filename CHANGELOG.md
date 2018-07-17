@@ -1,3 +1,11 @@
+### 1.1.1 (Tue Jul 17 11:34:14 2018 +0900)
+
+- Merge pull request #44 from heartbeatsjp/add-local-testing-environment-with-docker (Fri May 25 10:26:20 2018 +0900) dcc2431
+- Merge pull request #47 from heartbeatsjp/fix-35 (Fri May 25 15:38:06 2018 +0900) 42bd56e
+- Merge pull request #34 from heartbeatsjp/feature-disable-collect-metrics (Thu Jul 5 09:57:51 2018 +0900) e1f4483
+- Merge pull request #53 from heartbeatsjp/refine-testing (Fri Jul 13 14:54:44 2018 +0900) 0ec596e
+- Merge pull request #55 from heartbeatsjp/fix-error-handling-at-metric-collection (Tue Jul 17 11:34:14 2018 +0900) 793dbc3
+
 ### 1.1.0 (Sun Mar 4 13:39:36 2018 +0900)
 
 - Merge pull request #36 from heartbeatsjp/default-disable-requeststatus-middleware (Sun Mar 4 13:39:36 2018 +0900) 20e3591
