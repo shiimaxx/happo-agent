@@ -61,6 +61,12 @@ Use api client commands, `happo-agent` calls endpoint url which is client manage
 /path/to/happo-agent add -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -i [OWN_IP] -H [HOSTNAME] [-p BASTON_IP]
 ```
 
+#### AutoScaling add request
+
+```
+/path/to/happo-agent add_ag -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -n [AUTOSCALING_GROUP_NAME] -H [HOST_PREFIX] -c [AUTOSCALING_COUNT] [-p BASTON_IP]
+```
+
 #### Is host available ?
 
 ```

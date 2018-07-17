@@ -136,13 +136,26 @@ func BindManageParameter(c *cli.Context) (halib.ManageRequest, error) {
 	if hostinfo.GroupName == "" {
 		return manageRequest, errors.New("group_name is null")
 	}
-	hostinfo.IP = c.String("ip")
-	if hostinfo.GroupName == "" {
-		return manageRequest, errors.New("ip is null")
-	}
-	hostinfo.Hostname = c.String("hostname")
 	hostinfo.Port = c.Int("port")
 	hostinfo.Proxies = c.StringSlice("proxy")
+
+	if c.Command.Name == "add_ag" {
+		hostinfo.IP = c.String("autoscaling_group_name")
+		if hostinfo.IP == "" {
+			return manageRequest, errors.New("autoscaling_group_name is null")
+		}
+		hostinfo.Hostname = c.String("autoscaling_group_name")
+		hostinfo.AutoScaling = true
+		hostinfo.AutoScalingCount = c.Int("autoscaling_count")
+		hostinfo.HostPrefix = c.String("host_prefix")
+	} else {
+		hostinfo.IP = c.String("ip")
+		if hostinfo.IP == "" {
+			return manageRequest, errors.New("ip is null")
+		}
+		hostinfo.Hostname = c.String("hostname")
+	}
+
 	manageRequest.Hostdata = hostinfo
 
 	return manageRequest, nil

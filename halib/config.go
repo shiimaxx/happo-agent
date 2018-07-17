@@ -15,12 +15,15 @@ type MetricConfig struct {
 
 // CrawlConfigAgent is struct of actual crawl operation
 type CrawlConfigAgent struct {
-	GroupName string   `yaml:"group_name" json:"group_name"`
-	IP        string   `yaml:"ip" json:"ip"`
-	Hostname  string   `yaml:"hostname" json:"hostname"`
-	Port      int      `yaml:"port" json:"port"`
-	Proxies   []string `yaml:"proxies" json:"proxies"`
-	Disabled  bool     `yaml:"disabled,omitempty" json:"disabled,omitempty"`
+	GroupName        string   `yaml:"group_name" json:"group_name"`
+	IP               string   `yaml:"ip" json:"ip"`
+	Hostname         string   `yaml:"hostname" json:"hostname"`
+	Port             int      `yaml:"port" json:"port"`
+	AutoScaling      bool     `yaml:"autoscaling,omitempty" json:"autoscaling,omitempty"`
+	AutoScalingCount int      `yaml:"autoscaling_count,omitempty" json:"autoscaling_count,omitempty"`
+	HostPrefix       string   `yaml:"host_prefix,omitempty" json:"host_prefix,omitempty"`
+	Proxies          []string `yaml:"proxies" json:"proxies"`
+	Disabled         bool     `yaml:"disabled,omitempty" json:"disabled,omitempty"`
 }
 
 // AutoScalingConfig is struct of autoscaling config yaml file

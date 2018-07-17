@@ -60,6 +60,14 @@
 /path/to/happo-agent add -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -i [OWN_IP] -H [HOSTNAME] [-p BASTON_IP]
 ```
 
+#### AutoScalingグループ登録
+
+AutoScalingグループの存在を通知します。
+
+```
+/path/to/happo-agent add_ag -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -n [AUTOSCALING_GROUP_NAME] -H [HOST_PREFIX] -c [AUTOSCALING_COUNT] [-p BASTON_IP]
+```
+
 #### 登録済みかの確認
 
 このエージェントが登録されているかを確認します。
