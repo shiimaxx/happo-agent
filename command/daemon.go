@@ -184,7 +184,7 @@ func CmdDaemon(c *cli.Context) {
 			if !disableCollectMetrics {
 				err := collect.Metrics(c.String("metric-config"))
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
 				}
 			}
 		}
