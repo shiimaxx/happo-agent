@@ -138,11 +138,7 @@ func TestSaveAutoScalingConfig(t *testing.T) {
 		{
 			name: "single autoscaling group",
 			input1: halib.AutoScalingConfig{
-				AutoScalings: []struct {
-					AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
-					AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
-					HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
-				}{
+				AutoScalings: []halib.AutoScalingConfigData{
 					{
 						AutoScalingGroupName: "dummy-prod-ag",
 						AutoScalingCount:     10,
@@ -179,11 +175,7 @@ func TestGetAutoScalingConfig(t *testing.T) {
 			name:  "single autoscalng group",
 			input: TestConfigFile,
 			expected: halib.AutoScalingConfig{
-				AutoScalings: []struct {
-					AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
-					AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
-					HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
-				}{
+				AutoScalings: []halib.AutoScalingConfigData{
 					{
 						AutoScalingGroupName: "dummy-prod-ag",
 						AutoScalingCount:     10,
@@ -197,11 +189,7 @@ func TestGetAutoScalingConfig(t *testing.T) {
 			name:  "multi autoscaling group",
 			input: TestMultiConfigFile,
 			expected: halib.AutoScalingConfig{
-				AutoScalings: []struct {
-					AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
-					AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
-					HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
-				}{
+				AutoScalings: []halib.AutoScalingConfigData{
 					{
 						AutoScalingGroupName: "dummy-prod-ag",
 						AutoScalingCount:     10,
@@ -220,11 +208,7 @@ func TestGetAutoScalingConfig(t *testing.T) {
 			name:  "empty config file",
 			input: TestEmptyConfigFile,
 			expected: halib.AutoScalingConfig{
-				AutoScalings: []struct {
-					AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
-					AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
-					HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
-				}(nil),
+				AutoScalings: []halib.AutoScalingConfigData(nil),
 			},
 			isNormalTest: true,
 		},
@@ -232,11 +216,7 @@ func TestGetAutoScalingConfig(t *testing.T) {
 			name:  "missing config file",
 			input: TestMissingConfigFile,
 			expected: halib.AutoScalingConfig{
-				AutoScalings: []struct {
-					AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
-					AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
-					HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
-				}(nil),
+				AutoScalings: []halib.AutoScalingConfigData(nil),
 			},
 			isNormalTest: false,
 		},
