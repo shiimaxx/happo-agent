@@ -38,9 +38,9 @@ type AutoScalingData struct {
 
 // AutoScalingConfigData is actual autoscaling config data
 type AutoScalingConfigData struct {
-	AutoScalingGroupName string `json:"autoscaling_group_name"`
-	AutoScalingCount     int    `json:"autoscaling_count"`
-	HostPrefix           string `json:"host_prefix"`
+	AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
+	AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
+	HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
 }
 
 // --- Request Parameter
