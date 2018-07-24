@@ -19,7 +19,7 @@ type CrawlConfigAgent struct {
 	IP          string                `yaml:"ip" json:"ip"`
 	Hostname    string                `yaml:"hostname" json:"hostname"`
 	Port        int                   `yaml:"port" json:"port"`
-	AutoScaling AutoScalingConfigData `yamo:"autoscaling,omitempty" json:"autoscaling,omitempty"`
+	AutoScaling AutoScalingConfigData `yaml:"autoscaling,omitempty" json:"autoscaling,omitempty"`
 	Proxies     []string              `yaml:"proxies" json:"proxies"`
 	Disabled    bool                  `yaml:"disabled,omitempty" json:"disabled,omitempty"`
 }
