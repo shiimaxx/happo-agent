@@ -18,6 +18,7 @@ import (
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/codegangsta/martini-contrib/secure"
 	"github.com/go-martini/martini"
+	"github.com/heartbeatsjp/happo-agent/autoscaling"
 	"github.com/heartbeatsjp/happo-agent/collect"
 	"github.com/heartbeatsjp/happo-agent/db"
 	"github.com/heartbeatsjp/happo-agent/halib"
@@ -35,6 +36,9 @@ type daemonListener struct {
 	PublicKey      string
 	PrivateKey     string
 }
+
+var autoScalingBastionEndpoint string
+var autoScalingJoinWaitSeconds = halib.DefaultAutoScalingJoinWaitSeconds
 
 // --- functions
 
@@ -122,6 +126,37 @@ func CmdDaemon(c *cli.Context) {
 	defer db.Close()
 	db.MetricsMaxLifetimeSeconds = c.Int64("metrics-max-lifetime-seconds")
 	db.MachineStateMaxLifetimeSeconds = c.Int64("machine-state-max-lifetime-seconds")
+
+	isAutoScalingNode := c.Bool("enable-autoscaling-node")
+	if isAutoScalingNode {
+		path := c.String("autoscaling-parameter-store-path")
+		if path != "" {
+			client := autoscaling.NewAWSSsmClient()
+			p, err := client.GetAutoScalingNodeConfigParameters(path)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			autoScalingBastionEndpoint = p.BastionEndpoint
+			autoScalingJoinWaitSeconds = p.JoinWaitSeconds
+		} else {
+			autoScalingBastionEndpoint = c.String("autoscaling-bastion-endpoint")
+			autoScalingJoinWaitSeconds = c.Int("autoscaling-join-wait-seconds")
+		}
+
+		if autoScalingBastionEndpoint == "" {
+			log.Fatal(`missing "autoscaling-bastion-endpoint"`)
+		}
+		if autoScalingJoinWaitSeconds == 0 {
+			log.Warn(`"autoscaling-join-wait-seconds is 0: please check your autoscaling node settings`)
+		}
+		log.Info(
+			fmt.Sprintf(
+				"running as autoscaling node (autoscaling-bastion-endpoint: %s, autoscaling-join-wait-seconds: %d)",
+				autoScalingBastionEndpoint,
+				autoScalingJoinWaitSeconds,
+			),
+		)
+	}
 
 	model.SetProxyTimeout(c.Int64("proxy-timeout-seconds"))
 

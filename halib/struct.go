@@ -43,6 +43,12 @@ type AutoScalingConfigData struct {
 	HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
 }
 
+// AutoScalingNodeConfigParameters is struct of parameters for autoscaling node
+type AutoScalingNodeConfigParameters struct {
+	BastionEndpoint string
+	JoinWaitSeconds int
+}
+
 // --- Request Parameter
 
 // ProxyRequest is /proxy API

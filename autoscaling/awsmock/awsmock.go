@@ -1,11 +1,17 @@
 package awsmock
 
 import (
+	"strings"
+
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
 )
 
 // MockAutoScalingClient mock of autoscaling client
@@ -93,6 +99,50 @@ func (m *MockEC2Client) DescribeInstances(input *ec2.DescribeInstancesInput) (*e
 			if *instanceID == *r.Instances[0].InstanceId {
 				output.Reservations = append(output.Reservations, r)
 			}
+		}
+	}
+
+	return output, nil
+}
+
+// MockSsmClient mock of ssm client
+type MockSsmClient struct {
+	ssmiface.SSMAPI
+}
+
+// GetParametersByPath mock of ssm.GetParametersByPath
+func (m *MockSsmClient) GetParametersByPath(input *ssm.GetParametersByPathInput) (*ssm.GetParametersByPathOutput, error) {
+	output := &ssm.GetParametersByPathOutput{Parameters: []*ssm.Parameter{}}
+	parameters := []*ssm.Parameter{
+		{
+			Name:  aws.String("/happo-agent-env-1/HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT"),
+			Value: aws.String("http://192.0.2.100:6777"),
+		},
+		{
+			Name:  aws.String("/happo-agent-env-1/HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS"),
+			Value: aws.String("10"),
+		},
+		{
+			Name:  aws.String("/happo-agent-env-2/HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT"),
+			Value: aws.String("http://192.0.2.200:6777"),
+		},
+		{
+			Name:  aws.String("/happo-agent-env-3/HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS"),
+			Value: aws.String("20"),
+		},
+		{
+			Name:  aws.String("/happo-agent-env-4/HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT"),
+			Value: aws.String(""),
+		},
+		{
+			Name:  aws.String("/happo-agent-env-4/HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS"),
+			Value: aws.String(""),
+		},
+	}
+
+	for _, p := range parameters {
+		if strings.HasPrefix(*p.Name, fmt.Sprintf("%s/", *input.Path)) {
+			output.Parameters = append(output.Parameters, p)
 		}
 	}
 

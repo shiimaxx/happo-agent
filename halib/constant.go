@@ -63,3 +63,6 @@ const DefaultAutoScalingConfigPath = "./autoscaling.yaml"
 
 // DefaultRefreshAutoScalingIntervalSeconds when proxy monitor return not http.StatusOK), and refreshAutoScalingIntervalSeconds past from previous error, refresh AutoScaling instances.
 const DefaultRefreshAutoScalingIntervalSeconds = 60
+
+// DefaultAutoScalingJoinWaitSeconds is seconds of until join request to bastion endpoint
+const DefaultAutoScalingJoinWaitSeconds = 60

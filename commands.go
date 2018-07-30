@@ -136,6 +136,27 @@ var daemonFlags = []cli.Flag{
 		Usage:  "disable collect metrics ( if true, metrics.yaml has no meaning )",
 		EnvVar: "HAPPO_AGENT_DISABLE_COLLECT_METRICS",
 	},
+	cli.BoolFlag{
+		Name:   "enable-autoscaling-node",
+		Usage:  "to enable when running in autoscaling node",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_NODE",
+	},
+	cli.StringFlag{
+		Name:   "autoscaling-bastion-endpoint",
+		Usage:  "autoscaling bastion endpoint",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT",
+	},
+	cli.Int64Flag{
+		Name:   "autoscaling-join-wait-seconds",
+		Value:  halib.DefaultAutoScalingJoinWaitSeconds,
+		Usage:  "wait seconds of autoscaling node join request to bastion endpoint",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS",
+	},
+	cli.StringFlag{
+		Name:   "autoscaling-parameter-store-path",
+		Usage:  "path of parameter by AWS SSM Parameter Store",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_PARAMETER_STORE_PATH",
+	},
 }
 
 // Commands is list of subcommand
