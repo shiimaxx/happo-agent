@@ -143,13 +143,13 @@ var daemonFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:   "autoscaling-bastion-endpoint",
-		Usage:  "autoscaling bastion endpoint",
+		Usage:  "autoscaling bastion endpoint(if using autoscaling-parameter-store-path, to override in value of AWS SSM Parameter Store)",
 		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT",
 	},
 	cli.Int64Flag{
 		Name:   "autoscaling-join-wait-seconds",
 		Value:  halib.DefaultAutoScalingJoinWaitSeconds,
-		Usage:  "wait seconds of autoscaling node join request to bastion endpoint",
+		Usage:  "wait seconds of autoscaling node join request to bastion endpoint(if using autoscaling-parameter-store-path, to override in value of AWS SSM Parameter Store)",
 		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS",
 	},
 	cli.StringFlag{
