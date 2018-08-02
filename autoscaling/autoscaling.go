@@ -18,7 +18,6 @@ import (
 
 	"encoding/json"
 
-	"github.com/heartbeatsjp/happo-agent/collect"
 	"gopkg.in/yaml.v2"
 )
 
@@ -516,15 +515,15 @@ func GetAssignedInstance(autoScalingGroupName string) (string, error) {
 }
 
 // JoinAutoScalingGroup register request to auto scaling bastion
-func JoinAutoScalingGroup(client *NodeAWSClient, endpoint, metricConfigFile string) error {
+func JoinAutoScalingGroup(client *NodeAWSClient, endpoint string) (halib.MetricConfig, error) {
 	instanceID, ip, err := client.GetInstanceMetadata()
 	if err != nil {
-		return err
+		return halib.MetricConfig{}, err
 	}
 
 	autoScalingGroupName, err := client.GetAutoScalingGroupName(instanceID)
 	if err != nil {
-		return err
+		return halib.MetricConfig{}, err
 	}
 
 	req := halib.AutoScalingInstanceRegisterRequest{
@@ -536,28 +535,28 @@ func JoinAutoScalingGroup(client *NodeAWSClient, endpoint, metricConfigFile stri
 
 	data, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return halib.MetricConfig{}, err
 	}
 
 	resp, err := util.RequestToAutoScalingInstanceAPI(endpoint, "register", data)
 	if err != nil {
-		return fmt.Errorf("failed to api request: %s", err.Error())
+		return halib.MetricConfig{}, fmt.Errorf("failed to api request: %s", err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code is %d", resp.StatusCode)
+		return halib.MetricConfig{}, fmt.Errorf("status code is %d", resp.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		return err
+		return halib.MetricConfig{}, err
 	}
 
 	var m halib.MetricConfig
 	if err := json.Unmarshal(body, &m); err != nil {
-		return err
+		return halib.MetricConfig{}, err
 	}
 
-	return collect.SaveMetricConfig(m, metricConfigFile)
+	return m, nil
 }
