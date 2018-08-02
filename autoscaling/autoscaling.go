@@ -559,9 +559,5 @@ func JoinAutoScalingGroup(client *NodeAWSClient, endpoint, metricConfigFile stri
 		return err
 	}
 
-	if err := collect.SaveMetricConfig(m, metricConfigFile); err != nil {
-		return err
-	}
-
-	return nil
+	return collect.SaveMetricConfig(m, metricConfigFile)
 }
