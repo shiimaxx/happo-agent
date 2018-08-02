@@ -6,12 +6,14 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
+	"github.com/pkg/errors"
 )
 
 // MockAutoScalingClient mock of autoscaling client
@@ -22,6 +24,32 @@ type MockAutoScalingClient struct {
 // DescribeAutoScalingGroups mock of autoscaling.DescriveAutoScalingGroup
 func (m *MockAutoScalingClient) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: []*autoscaling.Group{{}}}
+	if len(input.AutoScalingGroupNames) < 1 {
+		output.AutoScalingGroups[0].AutoScalingGroupName = aws.String("dummy-prod-ag")
+		output.AutoScalingGroups[0].Instances = []*autoscaling.Instance{
+			{InstanceId: aws.String("i-aaaaaa"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-bbbbbb"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-cccccc"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-dddddd"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-eeeeee"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-ffffff"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-gggggg"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-hhhhhh"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-iiiiii"), LifecycleState: aws.String("InService")},
+			{InstanceId: aws.String("i-jjjjjj"), LifecycleState: aws.String("InService")},
+		}
+		output.AutoScalingGroups = append(output.AutoScalingGroups, &autoscaling.Group{
+			AutoScalingGroupName: aws.String("dummy-stg-ag"),
+			Instances: []*autoscaling.Instance{
+				{InstanceId: aws.String("i-kkkkkk"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-llllll"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-mmmmmm"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-nnnnnn"), LifecycleState: aws.String("InService")},
+			},
+		})
+		return output, nil
+	}
+
 	switch *input.AutoScalingGroupNames[0] {
 	case "dummy-prod-ag":
 		output.AutoScalingGroups[0].Instances = []*autoscaling.Instance{
@@ -147,4 +175,26 @@ func (m *MockSsmClient) GetParametersByPath(input *ssm.GetParametersByPathInput)
 	}
 
 	return output, nil
+}
+
+// MockEC2MetadataClient mock of ec2metadata client
+type MockEC2MetadataClient struct {
+	IsAvailable bool
+	HasError    bool
+}
+
+// Available mock of ec2metadata.Available
+func (m *MockEC2MetadataClient) Available() bool {
+	return m.IsAvailable
+}
+
+// GetInstanceIdentityDocument mock of ec2metadata.GetInstanceIdentityDocument
+func (m *MockEC2MetadataClient) GetInstanceIdentityDocument() (ec2metadata.EC2InstanceIdentityDocument, error) {
+	if m.HasError {
+		return ec2metadata.EC2InstanceIdentityDocument{}, errors.New("dummy error")
+	}
+	var e ec2metadata.EC2InstanceIdentityDocument
+	e.InstanceID = "i-aaaaaa"
+	e.PrivateIP = "192.0.2.11"
+	return e, nil
 }

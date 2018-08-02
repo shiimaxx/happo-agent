@@ -72,3 +72,105 @@ func TestGetAutoScalingNodeConfigParameters(t *testing.T) {
 		})
 	}
 }
+
+func TestGetInstanceMetadata(t *testing.T) {
+	var cases = []struct {
+		name        string
+		isAvailable bool
+		hasError    bool
+		expected    struct {
+			instanceID string
+			ip         string
+		}
+	}{
+		{
+			name:        "default",
+			isAvailable: true,
+			hasError:    false,
+			expected: struct {
+				instanceID string
+				ip         string
+			}{instanceID: "i-aaaaaa", ip: "192.0.2.11"},
+		},
+		{
+			name:        "ec2metadata is not available",
+			isAvailable: false,
+			hasError:    false,
+			expected: struct {
+				instanceID string
+				ip         string
+			}{instanceID: "", ip: ""},
+		},
+		{
+			name:        "ec2metadata has error",
+			isAvailable: false,
+			hasError:    true,
+			expected: struct {
+				instanceID string
+				ip         string
+			}{instanceID: "", ip: ""},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			client := &NodeAWSClient{
+				SvcEC2Metadata: &awsmock.MockEC2MetadataClient{
+					IsAvailable: c.isAvailable,
+					HasError:    c.hasError,
+				},
+			}
+			actualInstanceID, actualIP, err := client.GetInstanceMetadata()
+
+			if c.isAvailable && !c.hasError {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+			}
+			assert.Equal(t, c.expected.instanceID, actualInstanceID)
+			assert.Equal(t, c.expected.ip, actualIP)
+		})
+	}
+}
+
+func TestGetAutoScalingGroupName(t *testing.T) {
+	var cases = []struct {
+		name         string
+		input        string
+		expected     string
+		isNormalTest bool
+	}{
+		{
+			name:         "i-aaaaaa dummy-prod-ag",
+			input:        "i-aaaaaa",
+			expected:     "dummy-prod-ag",
+			isNormalTest: true,
+		},
+		{
+			name:         "i-kkkkkk dummy-stg-ag",
+			input:        "i-kkkkkk",
+			expected:     "dummy-stg-ag",
+			isNormalTest: true,
+		},
+		{
+			name:         "empty",
+			input:        "",
+			expected:     "",
+			isNormalTest: false,
+		},
+	}
+
+	client := &NodeAWSClient{
+		SvcAutoScaling: &awsmock.MockAutoScalingClient{},
+	}
+
+	for _, c := range cases {
+		result, err := client.GetAutoScalingGroupName(c.input)
+		if c.isNormalTest {
+			assert.Nil(t, err)
+		} else {
+			assert.NotNil(t, err)
+		}
+		assert.Equal(t, c.expected, result)
+	}
+}
