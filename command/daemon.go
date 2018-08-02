@@ -129,9 +129,9 @@ func CmdDaemon(c *cli.Context) {
 
 	isAutoScalingNode := c.Bool("enable-autoscaling-node")
 	if isAutoScalingNode {
+		client := autoscaling.NewNodeAWSClient()
 		path := c.String("autoscaling-parameter-store-path")
 		if path != "" {
-			client := autoscaling.NewAWSSsmClient()
 			p, err := client.GetAutoScalingNodeConfigParameters(path)
 			if err != nil {
 				log.Fatal(err.Error())
@@ -156,6 +156,13 @@ func CmdDaemon(c *cli.Context) {
 				autoScalingJoinWaitSeconds,
 			),
 		)
+		go func() {
+			time.Sleep(time.Duration(autoScalingJoinWaitSeconds) * time.Second)
+			if err := autoscaling.JoinAutoScalingGroup(client, autoScalingBastionEndpoint, c.String("metric-config")); err != nil {
+				log.Error(fmt.Sprintf("failed to join: %s", err.Error()))
+			}
+			log.Info(fmt.Sprintf("join succeed"))
+		}()
 	}
 
 	model.SetProxyTimeout(c.Int64("proxy-timeout-seconds"))

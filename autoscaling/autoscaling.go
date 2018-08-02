@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 
@@ -15,7 +16,10 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	leveldbUtil "github.com/syndtr/goleveldb/leveldb/util"
 
-	yaml "gopkg.in/yaml.v2"
+	"encoding/json"
+
+	"github.com/heartbeatsjp/happo-agent/collect"
+	"gopkg.in/yaml.v2"
 )
 
 // AutoScaling list autoscaling instances
@@ -509,4 +513,55 @@ func GetAssignedInstance(autoScalingGroupName string) (string, error) {
 	}
 	transaction.Discard()
 	return "", nil
+}
+
+// JoinAutoScalingGroup register request to auto scaling bastion
+func JoinAutoScalingGroup(client *NodeAWSClient, endpoint, metricConfigFile string) error {
+	instanceID, ip, err := client.GetInstanceMetadata()
+	if err != nil {
+		return err
+	}
+
+	autoScalingGroupName, err := client.GetAutoScalingGroupName(instanceID)
+	if err != nil {
+		return err
+	}
+
+	req := halib.AutoScalingInstanceRegisterRequest{
+		APIKey:               "",
+		InstanceID:           instanceID,
+		IP:                   ip,
+		AutoScalingGroupName: autoScalingGroupName,
+	}
+
+	data, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+
+	resp, err := util.RequestToAutoScalingInstanceAPI(endpoint, "register", data)
+	if err != nil {
+		return fmt.Errorf("failed to api request: %s", err.Error())
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("status code is %d", resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
+	var m halib.MetricConfig
+	if err := json.Unmarshal(body, &m); err != nil {
+		return err
+	}
+
+	if err := collect.SaveMetricConfig(m, metricConfigFile); err != nil {
+		return err
+	}
+
+	return nil
 }

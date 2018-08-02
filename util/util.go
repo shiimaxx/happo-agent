@@ -230,3 +230,26 @@ func buildAutoScalingResolveAPIRequest(endpoint string, alias string) (*http.Cli
 	}}
 	return client, req, err
 }
+
+// RequestToAutoScalingInstanceAPI send request to AutoScalingInstanceAPI
+func RequestToAutoScalingInstanceAPI(endpoint, requestType string, postdata []byte) (*http.Response, error) {
+	client, req, err := buildAutoScalingRegisterInstanceAPIRequest(endpoint, requestType, postdata)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
+}
+
+func buildAutoScalingRegisterInstanceAPIRequest(endpoint, requestType string, postdata []byte) (*http.Client, *http.Request, error) {
+	uri := fmt.Sprintf("%s/autoscaling/instance/%s", endpoint, requestType)
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(postdata))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	return client, req, err
+}

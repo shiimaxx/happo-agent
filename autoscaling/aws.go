@@ -1,11 +1,13 @@
 package autoscaling
 
 import (
+	"errors"
 	"strconv"
 
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
@@ -31,16 +33,26 @@ func NewAWSClient() *AWSClient {
 	}
 }
 
-// AWSSsmClient provides interface to SSM Parameter Store
-type AWSSsmClient struct {
-	SvcSSM ssmiface.SSMAPI
+// EC2MetadataAPI interface of ec2metadata.EC2Metadata
+type EC2MetadataAPI interface {
+	Available() bool
+	GetInstanceIdentityDocument() (ec2metadata.EC2InstanceIdentityDocument, error)
 }
 
-// NewAWSSsmClient return AWSSsmClient
-func NewAWSSsmClient() *AWSSsmClient {
+// NodeAWSClient provides interface to SSM Parameter Store
+type NodeAWSClient struct {
+	SvcSSM         ssmiface.SSMAPI
+	SvcAutoScaling autoscalingiface.AutoScalingAPI
+	SvcEC2Metadata EC2MetadataAPI
+}
+
+// NewNodeAWSClient return NodeAWSClient
+func NewNodeAWSClient() *NodeAWSClient {
 	sess := session.Must(session.NewSession())
-	return &AWSSsmClient{
-		SvcSSM: ssm.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
+	return &NodeAWSClient{
+		SvcSSM:         ssm.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
+		SvcAutoScaling: autoscaling.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
+		SvcEC2Metadata: ec2metadata.New(session.Must(session.NewSession())),
 	}
 }
 
@@ -91,7 +103,7 @@ func (client *AWSClient) describeAutoScalingInstances(autoScalingGroupName strin
 }
 
 // GetAutoScalingNodeConfigParameters returns parameters of autoscaling node config from AWS SSM Parameter Store
-func (client *AWSSsmClient) GetAutoScalingNodeConfigParameters(path string) (halib.AutoScalingNodeConfigParameters, error) {
+func (client *NodeAWSClient) GetAutoScalingNodeConfigParameters(path string) (halib.AutoScalingNodeConfigParameters, error) {
 	input := &ssm.GetParametersByPathInput{
 		Path: aws.String(path),
 	}
@@ -120,4 +132,34 @@ func (client *AWSSsmClient) GetAutoScalingNodeConfigParameters(path string) (hal
 	}
 
 	return nodeConfigParameters, nil
+}
+
+// GetInstanceMetadata return instance meta data
+func (client *NodeAWSClient) GetInstanceMetadata() (string, string, error) {
+	if client.SvcEC2Metadata.Available() {
+		i, err := client.SvcEC2Metadata.GetInstanceIdentityDocument()
+		if err != nil {
+			return "", "", err
+		}
+		return i.InstanceID, i.PrivateIP, nil
+	}
+	return "", "", errors.New("agent is not running with EC2 Instance or metadata service is not available")
+}
+
+// GetAutoScalingGroupName return autoscaling group name
+func (client *NodeAWSClient) GetAutoScalingGroupName(instanceID string) (string, error) {
+	result, err := client.SvcAutoScaling.DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
+	if err != nil {
+		return "", err
+	}
+
+	for _, a := range result.AutoScalingGroups {
+		for _, i := range a.Instances {
+			if *i.InstanceId == instanceID {
+				return *a.AutoScalingGroupName, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("%s is not autoscaling node", instanceID)
 }

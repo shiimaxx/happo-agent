@@ -56,7 +56,7 @@ func TestGetAutoScalingNodeConfigParameters(t *testing.T) {
 		},
 	}
 
-	client := &AWSSsmClient{
+	client := &NodeAWSClient{
 		SvcSSM: &awsmock.MockSsmClient{},
 	}
 
