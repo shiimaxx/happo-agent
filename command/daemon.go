@@ -160,8 +160,9 @@ func CmdDaemon(c *cli.Context) {
 			time.Sleep(time.Duration(autoScalingJoinWaitSeconds) * time.Second)
 			if err := autoscaling.JoinAutoScalingGroup(client, autoScalingBastionEndpoint, c.String("metric-config")); err != nil {
 				log.Error(fmt.Sprintf("failed to join: %s", err.Error()))
+			} else {
+				log.Info(fmt.Sprintf("join succeed"))
 			}
-			log.Info(fmt.Sprintf("join succeed"))
 		}()
 	}
 
