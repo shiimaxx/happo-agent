@@ -553,10 +553,10 @@ func JoinAutoScalingGroup(client *NodeAWSClient, endpoint string) (halib.MetricC
 		return halib.MetricConfig{}, err
 	}
 
-	var m halib.MetricConfig
-	if err := json.Unmarshal(body, &m); err != nil {
+	var r halib.AutoScalingInstanceRegisterResponse
+	if err := json.Unmarshal(body, &r); err != nil {
 		return halib.MetricConfig{}, err
 	}
 
-	return m, nil
+	return r.InstanceData.MetricConfig, nil
 }

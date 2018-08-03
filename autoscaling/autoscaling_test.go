@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/heartbeatsjp/happo-agent/db"
@@ -736,6 +740,158 @@ func TestAliasToIP(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			actual, err := AliasToIP(c.input)
+			if c.isNormalTest {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+			}
+			assert.Equal(t, c.expected, actual)
+		})
+	}
+}
+
+func TestJoinAutoScalingGroup1(t *testing.T) {
+	statusOKResponse := `
+{
+  "status": "ok",
+  "message": "",
+  "alias": "dummy-prod-ag-1",
+  "instance_data": {
+    "instance_id": "i-aaaaaa",
+    "ip": "192.0.2.11",
+    "metric_config": {
+      "metrics": [
+        {
+          "hostname": "dummy-prod-ag-1",
+          "plugins": [
+            {
+              "plugin_name": "metrics_test_plugin",
+			  "plugin_option": ""
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+`
+
+	statusErrorResponse := `
+{
+  "status": "error",
+  "message": "dummy error",
+  "alias": "",
+  "instance_data": {
+    "instance_id": "",
+    "ip": "",
+    "metric_config": {
+      "metrics": [
+        {
+          "hostname": "",
+          "plugins": [
+            {
+              "plugin_name": "",
+			  "plugin_option": ""
+            }
+          ]
+        }
+      ]
+    }
+  }s
+}
+`
+
+	var cases = []struct {
+		name                   string
+		ec2MetaDataisAvailable bool
+		ec2MetaDatahasError    bool
+		statusCode             int
+		dummyResponse          string
+		expected               halib.MetricConfig
+		isNormalTest           bool
+	}{
+		{
+			name: "default",
+			ec2MetaDataisAvailable: true,
+			ec2MetaDatahasError:    false,
+			statusCode:             http.StatusOK,
+			dummyResponse:          statusOKResponse,
+			expected: halib.MetricConfig{
+				Metrics: []struct {
+					Hostname string `yaml:"hostname" json:"Hostname"`
+					Plugins  []struct {
+						PluginName   string `yaml:"plugin_name" json:"Plugin_Name"`
+						PluginOption string `yaml:"plugin_option" json:"Plugin_Option"`
+					} `yaml:"plugins" json:"Plugins"`
+				}{
+					{
+						Hostname: "dummy-prod-ag-1",
+						Plugins: []struct {
+							PluginName   string `yaml:"plugin_name" json:"Plugin_Name"`
+							PluginOption string `yaml:"plugin_option" json:"Plugin_Option"`
+						}{
+							{
+								PluginName:   "metrics_test_plugin",
+								PluginOption: "",
+							},
+						},
+					},
+				},
+			},
+			isNormalTest: true,
+		},
+		{
+			name: "error response",
+			ec2MetaDataisAvailable: true,
+			ec2MetaDatahasError:    false,
+			statusCode:             http.StatusInternalServerError,
+			dummyResponse:          statusErrorResponse,
+			expected:               halib.MetricConfig{},
+			isNormalTest:           false,
+		},
+		{
+			name: "ec2metadata is not available",
+			ec2MetaDataisAvailable: false,
+			ec2MetaDatahasError:    false,
+			dummyResponse:          statusErrorResponse,
+			expected:               halib.MetricConfig{},
+			isNormalTest:           false,
+		},
+		{
+			name: "ec2metadata has error",
+			ec2MetaDataisAvailable: true,
+			ec2MetaDatahasError:    true,
+			dummyResponse:          statusErrorResponse,
+			expected:               halib.MetricConfig{},
+			isNormalTest:           false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(
+				http.HandlerFunc(
+					func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(c.statusCode)
+						fmt.Fprint(w, statusOKResponse)
+					}))
+
+			re, _ := regexp.Compile("([a-z]+)://([A-Za-z0-9.]+):([0-9]+)(.*)")
+			found := re.FindStringSubmatch(ts.URL)
+			host := found[2]
+			port, _ := strconv.Atoi(found[3])
+			endpoint := fmt.Sprintf("https://%s:%d", host, port)
+
+			client := &NodeAWSClient{
+				SvcEC2Metadata: &awsmock.MockEC2MetadataClient{
+					IsAvailable: c.ec2MetaDataisAvailable,
+					HasError:    c.ec2MetaDatahasError,
+				},
+				SvcAutoScaling: &awsmock.MockAutoScalingClient{},
+			}
+
+			actual, err := JoinAutoScalingGroup(client, endpoint)
+
 			if c.isNormalTest {
 				assert.Nil(t, err)
 			} else {
