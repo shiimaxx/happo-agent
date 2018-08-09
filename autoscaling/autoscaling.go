@@ -560,3 +560,32 @@ func JoinAutoScalingGroup(client *NodeAWSClient, endpoint string) (halib.MetricC
 
 	return r.InstanceData.MetricConfig, nil
 }
+
+// LeaveAutoScalingGroup deregister request to auto scaling bastion
+func LeaveAutoScalingGroup(client *NodeAWSClient, endpoint string) error {
+	instanceID, _, err := client.GetInstanceMetadata()
+	if err != nil {
+		return err
+	}
+
+	req := halib.AutoScalingInstanceDeregisterRequest{
+		APIKey:     "",
+		InstanceID: instanceID,
+	}
+
+	data, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+
+	resp, err := util.RequestToAutoScalingInstanceAPI(endpoint, "deregister", data)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("status code is %d", resp.StatusCode)
+	}
+
+	return nil
+}
