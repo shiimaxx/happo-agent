@@ -902,6 +902,94 @@ func TestJoinAutoScalingGroup1(t *testing.T) {
 	}
 }
 
+func TestLeaveAutoScalingGroup(t *testing.T) {
+	statusOKResponse := `
+{
+  "status": "OK",
+  "message": "",
+}
+`
+
+	statusErrorResponse := `
+{
+  "status": "NG",
+  "message": "dummy error",
+`
+
+	var cases = []struct {
+		name                   string
+		ec2MetaDataisAvailable bool
+		ec2MetaDatahasError    bool
+		statusCode             int
+		dummyResponse          string
+		isNormalTest           bool
+	}{
+		{
+			name: "default",
+			ec2MetaDataisAvailable: true,
+			ec2MetaDatahasError:    false,
+			statusCode:             http.StatusOK,
+			dummyResponse:          statusOKResponse,
+			isNormalTest:           true,
+		},
+		{
+			name: "error response",
+			ec2MetaDataisAvailable: true,
+			ec2MetaDatahasError:    false,
+			statusCode:             http.StatusInternalServerError,
+			dummyResponse:          statusErrorResponse,
+			isNormalTest:           false,
+		},
+		{
+			name: "ec2metadata is not available",
+			ec2MetaDataisAvailable: false,
+			ec2MetaDatahasError:    false,
+			dummyResponse:          statusErrorResponse,
+			isNormalTest:           false,
+		},
+		{
+			name: "ec2metadata has error",
+			ec2MetaDataisAvailable: true,
+			ec2MetaDatahasError:    true,
+			dummyResponse:          statusErrorResponse,
+			isNormalTest:           false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ts := httptest.NewTLSServer(
+				http.HandlerFunc(
+					func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(c.statusCode)
+						fmt.Fprint(w, statusOKResponse)
+					}))
+
+			re, _ := regexp.Compile("([a-z]+)://([A-Za-z0-9.]+):([0-9]+)(.*)")
+			found := re.FindStringSubmatch(ts.URL)
+			host := found[2]
+			port, _ := strconv.Atoi(found[3])
+			endpoint := fmt.Sprintf("https://%s:%d", host, port)
+
+			client := &NodeAWSClient{
+				SvcEC2Metadata: &awsmock.MockEC2MetadataClient{
+					IsAvailable: c.ec2MetaDataisAvailable,
+					HasError:    c.ec2MetaDatahasError,
+				},
+				SvcAutoScaling: &awsmock.MockAutoScalingClient{},
+			}
+
+			err := LeaveAutoScalingGroup(client, endpoint)
+
+			if c.isNormalTest {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
+	}
+}
+
 func TestMain(m *testing.M) {
 	//Mock
 	DB, err := leveldb.Open(storage.NewMemStorage(), nil)
