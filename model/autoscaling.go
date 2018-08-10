@@ -124,6 +124,7 @@ func AutoScalingInstanceRegister(request halib.AutoScalingInstanceRegisterReques
 
 // AutoScalingInstanceDeregister deregister autoscaling instance from dbms
 func AutoScalingInstanceDeregister(request halib.AutoScalingInstanceDeregisterRequest, r render.Render) {
+	log := util.HappoAgentLogger()
 	var response halib.AutoScalingInstanceDeregisterResponse
 
 	if request.InstanceID == "" {
@@ -133,13 +134,17 @@ func AutoScalingInstanceDeregister(request halib.AutoScalingInstanceDeregisterRe
 		return
 	}
 
-	err := autoscaling.DeregisterAutoScalingInstance(request.InstanceID)
-	if err != nil {
+	if err := autoscaling.DeregisterAutoScalingInstance(request.InstanceID); err != nil {
 		response.Status = "NG"
 		response.Message = err.Error()
-	} else {
-		response.Status = "OK"
+		log.Warnf("failed to deregister %s:%s", request.InstanceID, err.Error())
+		r.JSON(http.StatusInternalServerError, response)
+		return
 	}
+
+	response.Status = "OK"
+
+	log.Infof("deregister %s", request.InstanceID)
 
 	r.JSON(http.StatusOK, response)
 }
