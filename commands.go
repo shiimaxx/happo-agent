@@ -358,6 +358,19 @@ var Commands = []cli.Command{
 			},
 		},
 	},
+	{
+		Name:   "leave",
+		Usage:  "Leave from autoscaling.",
+		Action: command.CmdLeave,
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:   "node-endpoint, n",
+				Value:  "https://127.0.0.1:6777",
+				Usage:  "AutoScaling Node (Nearby happo-agent) endpoint address",
+				EnvVar: "HAPPO_AGENT_AUTOSCALING_NODE_ENDPOINT",
+			},
+		},
+	},
 }
 
 // CommandNotFound implements action when subcommand not found

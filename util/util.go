@@ -253,3 +253,26 @@ func buildAutoScalingRegisterInstanceAPIRequest(endpoint, requestType string, po
 	}}
 	return client, req, err
 }
+
+// RequestToAutoScalingLeaveAPI send request to AutoScalingInstanceAPI
+func RequestToAutoScalingLeaveAPI(endpoint string, postdata []byte) (*http.Response, error) {
+	client, req, err := buildAutoScalingLeaveAPIRequest(endpoint, postdata)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
+}
+
+func buildAutoScalingLeaveAPIRequest(endpoint string, postdata []byte) (*http.Client, *http.Request, error) {
+	uri := fmt.Sprintf("%s/autoscaling/leave", endpoint)
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(postdata))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	return client, req, err
+}
