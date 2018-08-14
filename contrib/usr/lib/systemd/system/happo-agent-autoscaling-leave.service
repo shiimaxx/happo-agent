@@ -1,0 +1,11 @@
+[Unit]
+Description=happo-agent leave at node shutdown
+After=happo-agent.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/usr/local/bin/happo-agent leave
+
+[Install]
+WantedBy=multi-user.target
