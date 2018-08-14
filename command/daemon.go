@@ -169,22 +169,6 @@ func CmdDaemon(c *cli.Context) {
 			}
 			log.Info(fmt.Sprintf("join succeed"))
 		}()
-
-		sigTerm := make(chan os.Signal, 1)
-		signal.Notify(sigTerm, syscall.SIGTERM)
-		go func() {
-			for {
-				select {
-				case <-sigTerm:
-					log.Info("leave from ", autoScalingBastionEndpoint)
-					if err := autoscaling.LeaveAutoScalingGroup(client, autoScalingBastionEndpoint); err != nil {
-						log.Fatal("failed to leave: ", err.Error())
-					}
-					log.Info("leave succeed")
-					os.Exit(0)
-				}
-			}
-		}()
 	}
 
 	model.SetProxyTimeout(c.Int64("proxy-timeout-seconds"))
