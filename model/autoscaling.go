@@ -12,8 +12,12 @@ import (
 	"github.com/heartbeatsjp/happo-agent/util"
 )
 
-// AutoScalingConfigFile is filepath of autoscaling config file
-var AutoScalingConfigFile string
+var (
+	// AutoScalingConfigFile is filepath of autoscaling config file
+	AutoScalingConfigFile string
+	// AutoScalingBastionEndpoint is endpoint of autoscaling bastion when using running with autoscaling node
+	AutoScalingBastionEndpoint string
+)
 
 // AutoScaling list autoscaling instances
 func AutoScaling(req *http.Request, r render.Render) {
@@ -247,6 +251,22 @@ func AutoScalingRefresh(request halib.AutoScalingRefreshRequest, r render.Render
 		response.Message = strings.Join(errors, ",")
 		r.JSON(http.StatusInternalServerError, response)
 		return
+	}
+
+	response.Status = "OK"
+	r.JSON(http.StatusOK, response)
+}
+
+// AutoScalingLeave deregister self node from autoscaling bastion.
+// this handler is available only in agent running with autoscaling node.
+func AutoScalingLeave(request halib.AutoScalingLeaveRequest, r render.Render) {
+	var response halib.AutoScalingLeaveResponse
+
+	client := autoscaling.NewNodeAWSClient()
+	if err := autoscaling.LeaveAutoScalingGroup(client, AutoScalingBastionEndpoint); err != nil {
+		response.Status = "error"
+		response.Message = fmt.Sprintf("failed to leave: %s", err.Error())
+		r.JSON(http.StatusInternalServerError, response)
 	}
 
 	response.Status = "OK"

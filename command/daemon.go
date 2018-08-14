@@ -156,6 +156,9 @@ func CmdDaemon(c *cli.Context) {
 				autoScalingJoinWaitSeconds,
 			),
 		)
+
+		model.AutoScalingBastionEndpoint = autoScalingBastionEndpoint
+
 		go func() {
 			time.Sleep(time.Duration(autoScalingJoinWaitSeconds) * time.Second)
 			metricConfig, err := autoscaling.JoinAutoScalingGroup(client, autoScalingBastionEndpoint)
@@ -197,6 +200,9 @@ func CmdDaemon(c *cli.Context) {
 	m.Post("/autoscaling/instance/register", binding.Json(halib.AutoScalingInstanceRegisterRequest{}), model.AutoScalingInstanceRegister)
 	m.Post("/autoscaling/instance/deregister", binding.Json(halib.AutoScalingInstanceDeregisterRequest{}), model.AutoScalingInstanceDeregister)
 	m.Post("/autoscaling/config/update", binding.Json(halib.AutoScalingConfigUpdateRequest{}), model.AutoScalingConfigUpdate)
+	if isAutoScalingNode {
+		m.Post("/autoscaling/leave", binding.Json(halib.AutoScalingLeaveRequest{}), model.AutoScalingLeave)
+	}
 	m.Get("/autoscaling", model.AutoScaling)
 	m.Get("/autoscaling/resolve/:alias", model.AutoScalingResolve)
 	m.Get("/metric/status", model.MetricDataBufferStatus)

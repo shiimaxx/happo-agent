@@ -127,6 +127,11 @@ type AutoScalingConfigUpdateRequest struct {
 	Config AutoScalingConfig `json:"config"`
 }
 
+// AutoScalingLeaveRequest is /autoscaling/leave API
+type AutoScalingLeaveRequest struct {
+	APIKey string `json:"apikey"`
+}
+
 // --- Response Parameter
 
 // MonitorResponse is /monitor API
@@ -204,6 +209,12 @@ type AutoScalingInstanceDeregisterResponse struct {
 
 // AutoScalingConfigUpdateResponse is /autoscaling/config/update API
 type AutoScalingConfigUpdateResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// AutoScalingLeaveResponse is /autoscaling/leave API
+type AutoScalingLeaveResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
