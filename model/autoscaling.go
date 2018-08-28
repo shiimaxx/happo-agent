@@ -267,6 +267,7 @@ func AutoScalingLeave(request halib.AutoScalingLeaveRequest, r render.Render) {
 		response.Status = "error"
 		response.Message = fmt.Sprintf("failed to leave: %s", err.Error())
 		r.JSON(http.StatusInternalServerError, response)
+		return
 	}
 
 	response.Status = "OK"
