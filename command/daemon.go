@@ -208,6 +208,7 @@ func CmdDaemon(c *cli.Context) {
 	m.Get("/metric/status", model.MetricDataBufferStatus)
 	m.Get("/status", model.Status)
 	m.Get("/status/memory", model.MemoryStatus)
+	m.Get("/status/autoscaling", model.AutoScalingStatus)
 	if enableRequestStatusMiddlware {
 		m.Get("/status/request", model.RequestStatus)
 	}

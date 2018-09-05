@@ -516,6 +516,22 @@ $ wget -q --no-check-certificate -O - https://127.0.0.1:6777/status/request
 {"last1":[{"url":"/","counts":{"200":3,"403":1}},{"url":"/proxy","counts":{"200":1,"403":1}}],"last5":[{"url":"/","counts":{"200":3,"403":1}},{"url":"/proxy","counts":{"200":1,"403":1}}]}
 ```
 
+### /status/autoscaling
+
+Get autoscaling status
+
+- Input format
+    - None
+- Input variables
+    - None
+- Return format
+    - JSON
+- Return variables
+    - (Array)
+        - autoscaling_group_name: autoscaling group name
+        - status: result status
+        - message: message from agent (if error occurred)
+
 ### /machine-state
 
 Get machine state key list.

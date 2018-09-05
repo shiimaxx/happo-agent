@@ -49,6 +49,13 @@ type AutoScalingNodeConfigParameters struct {
 	JoinWaitSeconds int
 }
 
+// AutoScalingStatus represents the status of autoscaling group
+type AutoScalingStatus struct {
+	AutoScalingGroupName string `json:"autoscaling_group_name"`
+	Status               string `json:"status"`
+	Message              string `json:"message"`
+}
+
 // --- Request Parameter
 
 // ProxyRequest is /proxy API

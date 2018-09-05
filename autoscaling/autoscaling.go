@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/heartbeatsjp/happo-agent/db"
 	"github.com/heartbeatsjp/happo-agent/halib"
@@ -72,6 +74,66 @@ func AutoScaling(configPath string) ([]halib.AutoScalingData, error) {
 	transaction.Discard()
 
 	return autoScaling, nil
+}
+
+// CompareInstances returns instance ids of difference between dbms and result of AWS API.
+// It return contains instance id which found in result of AWS API but not in dbms.
+//
+// In following case, return `[]string{"i-dddddd", "i-eeeeee"}`.
+//   dbms   : i-aaaaaa, i-bbbbbb, i-cccccc
+//   AWS API: i-aaaaaa, i-bbbbbb, i-dddddd, i-eeeeee
+//
+func CompareInstances(client *AWSClient, name, prefix string) ([]string, error) {
+	log := util.HappoAgentLogger()
+
+	if name == "" {
+		return []string{}, errors.New("missing autoscaling group name")
+	}
+
+	instances, err := client.describeAutoScalingInstances(name)
+	if err != nil {
+		log.Error(err)
+		return []string{}, err
+	}
+
+	actual := []string{}
+	for _, i := range instances {
+		actual = append(actual, *i.InstanceId)
+	}
+
+	iter := db.DB.NewIterator(leveldbUtil.BytesPrefix([]byte(fmt.Sprintf("ag-%s-%s-", name, prefix))), nil)
+
+	var registered []string
+	for iter.Next() {
+		var data halib.InstanceData
+		v := iter.Value()
+		dec := gob.NewDecoder(bytes.NewReader(v))
+		dec.Decode(&data)
+		if data.InstanceID != "" {
+			registered = append(registered, data.InstanceID)
+		}
+	}
+	iter.Release()
+	if err := iter.Error(); err != nil {
+		log.Error(err)
+		return []string{}, err
+	}
+
+	var diff []string
+	for _, a := range actual {
+		found := false
+		for _, r := range registered {
+			if a == r {
+				found = true
+				break
+			}
+		}
+		if !found {
+			diff = append(diff, a)
+		}
+	}
+
+	return diff, nil
 }
 
 // SaveAutoScalingConfig save autoscaling config to config file
