@@ -990,6 +990,92 @@ func TestLeaveAutoScalingGroup(t *testing.T) {
 	}
 }
 
+func TestCompareInstances(t *testing.T) {
+	var cases = []struct {
+		name         string
+		input        []string
+		expected     []string
+		isNormalTest bool
+	}{
+		{
+			name:         "dummy-prod-ag",
+			input:        []string{"dummy-prod-ag", "dummy-prod-app"},
+			expected:     []string(nil),
+			isNormalTest: true,
+		},
+		{
+			name:         "dummy-empty-ag",
+			input:        []string{"dummy-empty-ag", "dummy-empty-app"},
+			expected:     []string(nil),
+			isNormalTest: true,
+		},
+		{
+			name:         "dummy-missing-ag",
+			input:        []string{"dummy-missing-ag", "dummy-missing-app"},
+			expected:     []string(nil),
+			isNormalTest: true,
+		},
+		{
+			name:         "empty input",
+			input:        []string{"", ""},
+			expected:     []string{},
+			isNormalTest: false,
+		},
+	}
+
+	client := &AWSClient{
+		SvcEC2:         &awsmock.MockEC2Client{},
+		SvcAutoscaling: &awsmock.MockAutoScalingClient{},
+	}
+
+	RefreshAutoScalingInstances(client, "dummy-prod-ag", "dummy-prod-app", 10)
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			diff, err := CompareInstances(client, c.input[0], c.input[1])
+			assert.Equal(t, c.expected, diff)
+			if c.isNormalTest {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
+	}
+}
+
+func TestCompareInstances_Diff(t *testing.T) {
+	input := []string{"dummy-prod-ag", "dummy-prod-app"}
+	expected := []string{"i-aaaaaa"}
+
+	client := &AWSClient{
+		SvcEC2:         &awsmock.MockEC2Client{},
+		SvcAutoscaling: &awsmock.MockAutoScalingClient{},
+	}
+
+	RefreshAutoScalingInstances(client, "dummy-prod-ag", "dummy-prod-app", 10)
+	iter := db.DB.NewIterator(
+		leveldbUtil.BytesPrefix(
+			[]byte("ag-"),
+		),
+		nil,
+	)
+	for iter.Next() {
+		var data halib.InstanceData
+		v := iter.Value()
+		dec := gob.NewDecoder(bytes.NewReader(v))
+		dec.Decode(&data)
+
+		if data.InstanceID == "i-aaaaaa" {
+			db.DB.Delete(iter.Key(), nil)
+		}
+	}
+	iter.Release()
+
+	diff, err := CompareInstances(client, input[0], input[1])
+	assert.Equal(t, expected, diff)
+	assert.Nil(t, err)
+}
+
 func TestMain(m *testing.M) {
 	//Mock
 	DB, err := leveldb.Open(storage.NewMemStorage(), nil)
