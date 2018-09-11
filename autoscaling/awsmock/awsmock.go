@@ -106,27 +106,61 @@ type MockEC2Client struct {
 func (m *MockEC2Client) DescribeInstances(input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	output := &ec2.DescribeInstancesOutput{Reservations: []*ec2.Reservation{}}
 	reservations := []*ec2.Reservation{
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-aaaaaa"), PrivateIpAddress: aws.String("192.0.2.11")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-bbbbbb"), PrivateIpAddress: aws.String("192.0.2.12")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-cccccc"), PrivateIpAddress: aws.String("192.0.2.13")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-dddddd"), PrivateIpAddress: aws.String("192.0.2.14")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-eeeeee"), PrivateIpAddress: aws.String("192.0.2.15")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-ffffff"), PrivateIpAddress: aws.String("192.0.2.16")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-gggggg"), PrivateIpAddress: aws.String("192.0.2.17")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-hhhhhh"), PrivateIpAddress: aws.String("192.0.2.18")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-iiiiii"), PrivateIpAddress: aws.String("192.0.2.19")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-jjjjjj"), PrivateIpAddress: aws.String("192.0.2.20")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-kkkkkk"), PrivateIpAddress: aws.String("192.0.2.21")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-llllll"), PrivateIpAddress: aws.String("192.0.2.22")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-mmmmmm"), PrivateIpAddress: aws.String("192.0.2.23")}}},
-		{Instances: []*ec2.Instance{{InstanceId: aws.String("i-nnnnnn"), PrivateIpAddress: aws.String("192.0.2.24")}}},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-aaaaaa"), PrivateIpAddress: aws.String("192.0.2.11")},
+				{InstanceId: aws.String("i-bbbbbb"), PrivateIpAddress: aws.String("192.0.2.12")},
+			},
+		},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-cccccc"), PrivateIpAddress: aws.String("192.0.2.13")},
+				{InstanceId: aws.String("i-dddddd"), PrivateIpAddress: aws.String("192.0.2.14")},
+			},
+		},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-eeeeee"), PrivateIpAddress: aws.String("192.0.2.15")},
+				{InstanceId: aws.String("i-ffffff"), PrivateIpAddress: aws.String("192.0.2.16")},
+			},
+		},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-gggggg"), PrivateIpAddress: aws.String("192.0.2.17")},
+				{InstanceId: aws.String("i-hhhhhh"), PrivateIpAddress: aws.String("192.0.2.18")},
+			},
+		},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-iiiiii"), PrivateIpAddress: aws.String("192.0.2.19")},
+				{InstanceId: aws.String("i-jjjjjj"), PrivateIpAddress: aws.String("192.0.2.20")},
+			},
+		},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-kkkkkk"), PrivateIpAddress: aws.String("192.0.2.21")},
+				{InstanceId: aws.String("i-llllll"), PrivateIpAddress: aws.String("192.0.2.22")},
+			},
+		},
+		{
+			Instances: []*ec2.Instance{
+				{InstanceId: aws.String("i-mmmmmm"), PrivateIpAddress: aws.String("192.0.2.23")},
+				{InstanceId: aws.String("i-nnnnnn"), PrivateIpAddress: aws.String("192.0.2.24")},
+			},
+		},
 	}
 
-	for _, instanceID := range input.InstanceIds {
-		for _, r := range reservations {
-			if *instanceID == *r.Instances[0].InstanceId {
-				output.Reservations = append(output.Reservations, r)
+	for _, r := range reservations {
+		reserve := &ec2.Reservation{Instances: []*ec2.Instance{}}
+		for _, instanceID := range input.InstanceIds {
+			for _, i := range r.Instances {
+				if *instanceID == *i.InstanceId {
+					reserve.Instances = append(reserve.Instances, i)
+				}
 			}
+		}
+		if len(reserve.Instances) > 0 {
+			output.Reservations = append(output.Reservations, reserve)
 		}
 	}
 
