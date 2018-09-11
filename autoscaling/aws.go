@@ -96,7 +96,9 @@ func (client *AWSClient) describeAutoScalingInstances(autoScalingGroupName strin
 	}
 
 	for _, r := range result2.Reservations {
-		autoScalingInstances = append(autoScalingInstances, r.Instances[0])
+		for _, i := range r.Instances {
+			autoScalingInstances = append(autoScalingInstances, i)
+		}
 	}
 
 	return autoScalingInstances, nil
