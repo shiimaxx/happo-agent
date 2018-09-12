@@ -91,9 +91,6 @@ func (client *AWSClient) describeAutoScalingInstances(autoScalingGroupName strin
 	if err != nil {
 		return nil, err
 	}
-	if len(result2.Reservations) < 1 {
-		return autoScalingInstances, nil
-	}
 
 	for _, r := range result2.Reservations {
 		for _, i := range r.Instances {
