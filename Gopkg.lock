@@ -103,15 +103,12 @@
   revision = "553a641470496b2327abcac10b36396bd98e45c9"
 
 [[projects]]
-<<<<<<< HEAD
-=======
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "0b12d6b5"
 
 [[projects]]
   branch = "master"
->>>>>>> Update deps
   name = "github.com/martini-contrib/binding"
   packages = ["."]
   revision = "05d3e151b6cf34dacac6306226a33db68459a3b5"
