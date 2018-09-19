@@ -57,3 +57,12 @@ const DefaultSensuPluginPaths = "/usr/local/hb-agent/bin,/usr/local/bin"
 
 // DefaultMetricsConfigPath is default metric collection config path
 const DefaultMetricsConfigPath = "./metrics.yaml"
+
+// DefaultAutoScalingConfigPath is default autoscaling config path
+const DefaultAutoScalingConfigPath = "./autoscaling.yaml"
+
+// DefaultRefreshAutoScalingIntervalSeconds when proxy monitor return not http.StatusOK), and refreshAutoScalingIntervalSeconds past from previous error, refresh AutoScaling instances.
+const DefaultRefreshAutoScalingIntervalSeconds = 60
+
+// DefaultAutoScalingJoinWaitSeconds is seconds of until join request to bastion endpoint
+const DefaultAutoScalingJoinWaitSeconds = 60

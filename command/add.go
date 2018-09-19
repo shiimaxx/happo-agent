@@ -17,6 +17,10 @@ func CmdAdd(c *cli.Context) error {
 	}
 
 	manageRequest, err := util.BindManageParameter(c)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 1)
+	}
+
 	data, err := json.Marshal(manageRequest)
 	if err != nil {
 		return cli.NewExitError(err.Error(), 1)

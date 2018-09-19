@@ -55,6 +55,12 @@ var daemonFlags = []cli.Flag{
 		EnvVar: "HAPPO_AGENT_METRIC_CONFIG",
 	},
 	cli.StringFlag{
+		Name:   "autoscaling-config, a",
+		Value:  halib.DefaultAutoScalingConfigPath,
+		Usage:  "AutoScaling config file path",
+		EnvVar: "HAPPO_AGENT_AUTOSCALING_CONFIG",
+	},
+	cli.StringFlag{
 		Name:   "cpu-profile, C",
 		Value:  "",
 		Usage:  "CPU profile output.",
@@ -130,6 +136,27 @@ var daemonFlags = []cli.Flag{
 		Usage:  "disable collect metrics ( if true, metrics.yaml has no meaning )",
 		EnvVar: "HAPPO_AGENT_DISABLE_COLLECT_METRICS",
 	},
+	cli.BoolFlag{
+		Name:   "enable-autoscaling-node",
+		Usage:  "to enable when running in autoscaling node",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_NODE",
+	},
+	cli.StringFlag{
+		Name:   "autoscaling-bastion-endpoint",
+		Usage:  "autoscaling bastion endpoint(if using autoscaling-parameter-store-path, to override in value of AWS SSM Parameter Store)",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT",
+	},
+	cli.Int64Flag{
+		Name:   "autoscaling-join-wait-seconds",
+		Value:  halib.DefaultAutoScalingJoinWaitSeconds,
+		Usage:  "wait seconds of autoscaling node join request to bastion endpoint(if using autoscaling-parameter-store-path, to override in value of AWS SSM Parameter Store)",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS",
+	},
+	cli.StringFlag{
+		Name:   "autoscaling-parameter-store-path",
+		Usage:  "path of parameter by AWS SSM Parameter Store",
+		EnvVar: "HAPPO_AGENT_DAEMON_AUTOSCALING_PARAMETER_STORE_PATH",
+	},
 }
 
 // Commands is list of subcommand
@@ -159,6 +186,51 @@ var Commands = []cli.Command{
 				Name:   "hostname, H",
 				Usage:  "Hostname (This host!)",
 				EnvVar: "HAPPO_AGENT_HOSTNAME",
+			},
+			cli.StringSliceFlag{
+				Name:   "proxy, p",
+				Value:  &cli.StringSlice{},
+				Usage:  "Proxy host ip:port (You can multiple define.)",
+				EnvVar: "HAPPO_AGENT_PROXY",
+			},
+			cli.IntFlag{
+				Name:   "port, P",
+				Value:  halib.DefaultAgentPort,
+				Usage:  "Listen port number",
+				EnvVar: "HAPPO_AGENT_PORT",
+			},
+			cli.StringFlag{
+				Name:   "endpoint, e",
+				Value:  halib.DefaultAPIEndpoint,
+				Usage:  "API Endpoint address",
+				EnvVar: "HAPPO_AGENT_ENDPOINT",
+			},
+		},
+	},
+	{
+		Name:   "add_ag",
+		Usage:  "Add to autoscaling group",
+		Action: command.CmdAdd,
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:   "group_name, g",
+				Usage:  "Group name",
+				EnvVar: "HAPPO_AGENT_GROUP_NAME",
+			},
+			cli.StringFlag{
+				Name:   "autoscaling_group_name, n",
+				Usage:  "Auto Scaling Group Name",
+				EnvVar: "HAPPO_AGENT_AUTOSCALING_GROUP_NAME",
+			},
+			cli.StringFlag{
+				Name:   "host_prefix, H",
+				Usage:  "Hostname Prefix",
+				EnvVar: "HAPPO_AGENT_AUTOSCALING_HOSTNAME",
+			},
+			cli.IntFlag{
+				Name:   "autoscaling_count, c",
+				Usage:  "Number of Auto Scaling Instances",
+				EnvVar: "HAPPO_AGENT_AUTOSCALING_COUNT",
 			},
 			cli.StringSliceFlag{
 				Name:   "proxy, p",
@@ -270,6 +342,32 @@ var Commands = []cli.Command{
 				Name:   "dry-run, n",
 				Usage:  "dry run(NOT post to bastion)",
 				EnvVar: "HAPPO_AGENT_DRY_RUN",
+			},
+		},
+	},
+	{
+		Name:   "resolve_alias",
+		Usage:  "Resolve alias.",
+		Action: command.CmdResolveAlias,
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:   "bastion-endpoint, b",
+				Value:  "https://127.0.0.1:6777",
+				Usage:  "Bastion (Nearby happo-agent) endpoint address",
+				EnvVar: "HAPPO_AGENT_BASTION_ENDPOINT",
+			},
+		},
+	},
+	{
+		Name:   "leave",
+		Usage:  "Leave from autoscaling.",
+		Action: command.CmdLeave,
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:   "node-endpoint, n",
+				Value:  "https://127.0.0.1:6777",
+				Usage:  "AutoScaling Node (Nearby happo-agent) endpoint address",
+				EnvVar: "HAPPO_AGENT_AUTOSCALING_NODE_ENDPOINT",
 			},
 		},
 	},

@@ -13,6 +13,43 @@
   revision = "84831c43cf48f6b1d52c64ed499d714ffd62eca1"
 
 [[projects]]
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/sdkio",
+    "internal/sdkrand",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/ec2query",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/autoscaling",
+    "service/autoscaling/autoscalingiface",
+    "service/ec2",
+    "service/ec2/ec2iface",
+    "service/sts"
+  ]
+  revision = "236a3fce423171d03ae327a8aa2512e6fb24df36"
+  version = "v1.13.39"
+
+[[projects]]
   name = "github.com/client9/reopen"
   packages = ["."]
   revision = "4b86f9c0ead51cc410d05655596e30f281ed9071"
@@ -36,13 +73,22 @@
 
 [[projects]]
   name = "github.com/codegangsta/martini-contrib"
-  packages = ["render","secure"]
+  packages = [
+    "render",
+    "secure"
+  ]
   revision = "8ce6181c2609699e4c7cd30994b76a850a9cdadc"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "2df174808ee097f90d259e432cc04442cf60be21"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "6529cf7c58879c08d927016dde4477f18a0634cb"
+  version = "v1.36.0"
 
 [[projects]]
   name = "github.com/go-martini/martini"
@@ -57,6 +103,12 @@
   revision = "553a641470496b2327abcac10b36396bd98e45c9"
 
 [[projects]]
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  revision = "0b12d6b5"
+
+[[projects]]
+  branch = "master"
   name = "github.com/martini-contrib/binding"
   packages = ["."]
   revision = "05d3e151b6cf34dacac6306226a33db68459a3b5"
@@ -74,7 +126,20 @@
 
 [[projects]]
   name = "github.com/syndtr/goleveldb"
-  packages = ["leveldb","leveldb/cache","leveldb/comparer","leveldb/errors","leveldb/filter","leveldb/iterator","leveldb/journal","leveldb/memdb","leveldb/opt","leveldb/storage","leveldb/table","leveldb/util"]
+  packages = [
+    "leveldb",
+    "leveldb/cache",
+    "leveldb/comparer",
+    "leveldb/errors",
+    "leveldb/filter",
+    "leveldb/iterator",
+    "leveldb/journal",
+    "leveldb/memdb",
+    "leveldb/opt",
+    "leveldb/storage",
+    "leveldb/table",
+    "leveldb/util"
+  ]
   revision = "8c81ea47d4c41a385645e133e15510fc6a2a74b4"
 
 [[projects]]

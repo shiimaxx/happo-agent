@@ -1,12 +1,14 @@
 package model
 
 import (
+	"fmt"
 	"net/http"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/codegangsta/martini-contrib/render"
+	"github.com/heartbeatsjp/happo-agent/autoscaling"
 	"github.com/heartbeatsjp/happo-agent/collect"
 	"github.com/heartbeatsjp/happo-agent/db"
 	"github.com/heartbeatsjp/happo-agent/halib"
@@ -84,4 +86,42 @@ func MemoryStatus(req *http.Request, r render.Render) {
 	mem := new(runtime.MemStats)
 	runtime.ReadMemStats(mem)
 	r.JSON(http.StatusOK, mem)
+}
+
+// AutoScalingStatus implements /status/autoscaling endpoint
+func AutoScalingStatus(req *http.Request, r render.Render) {
+	config, err := autoscaling.GetAutoScalingConfig(AutoScalingConfigFile)
+	if err != nil {
+		r.JSON(http.StatusInternalServerError, halib.AutoScalingStatus{})
+		return
+	}
+
+	client := autoscaling.NewAWSClient()
+	var status []halib.AutoScalingStatus
+	for _, a := range config.AutoScalings {
+		diff, err := autoscaling.CompareInstances(client, a.AutoScalingGroupName, a.HostPrefix)
+		if err != nil {
+			status = append(status, halib.AutoScalingStatus{
+				AutoScalingGroupName: a.AutoScalingGroupName,
+				Status:               "error",
+				Message:              "check failed",
+			})
+			continue
+		}
+		if len(diff) > 0 {
+			status = append(status, halib.AutoScalingStatus{
+				AutoScalingGroupName: a.AutoScalingGroupName,
+				Status:               "error",
+				Message:              fmt.Sprintf("difference found: %s", strings.Join(diff, ",")),
+			})
+			continue
+		}
+		status = append(status, halib.AutoScalingStatus{
+			AutoScalingGroupName: a.AutoScalingGroupName,
+			Status:               "ok",
+			Message:              "",
+		})
+	}
+
+	r.JSON(http.StatusOK, status)
 }

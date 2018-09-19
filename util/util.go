@@ -136,13 +136,38 @@ func BindManageParameter(c *cli.Context) (halib.ManageRequest, error) {
 	if hostinfo.GroupName == "" {
 		return manageRequest, errors.New("group_name is null")
 	}
-	hostinfo.IP = c.String("ip")
-	if hostinfo.GroupName == "" {
-		return manageRequest, errors.New("ip is null")
-	}
-	hostinfo.Hostname = c.String("hostname")
 	hostinfo.Port = c.Int("port")
-	hostinfo.Proxies = c.StringSlice("proxy")
+
+	if c.Command.Name == "add_ag" {
+		hostinfo.IP = c.String("autoscaling_group_name")
+		if hostinfo.IP == "" {
+			return manageRequest, errors.New("autoscaling_group_name is null")
+		}
+		hostinfo.Hostname = c.String("autoscaling_group_name")
+		hostinfo.AutoScaling.AutoScalingGroupName = c.String("autoscaling_group_name")
+
+		hostinfo.Proxies = c.StringSlice("proxy")
+		if len(hostinfo.Proxies) < 1 {
+			return manageRequest, errors.New("proxy is null")
+		}
+
+		hostinfo.AutoScaling.AutoScalingCount = c.Int("autoscaling_count")
+		if hostinfo.AutoScaling.AutoScalingCount < 1 {
+			return manageRequest, errors.New("autoscaling_count is lower than 1")
+		}
+		hostinfo.AutoScaling.HostPrefix = c.String("host_prefix")
+		if hostinfo.AutoScaling.HostPrefix == "" {
+			return manageRequest, errors.New("host_prefix is null")
+		}
+	} else {
+		hostinfo.IP = c.String("ip")
+		if hostinfo.IP == "" {
+			return manageRequest, errors.New("ip is null")
+		}
+		hostinfo.Hostname = c.String("hostname")
+		hostinfo.Proxies = c.StringSlice("proxy")
+	}
+
 	manageRequest.Hostdata = hostinfo
 
 	return manageRequest, nil
@@ -178,6 +203,74 @@ func buildMetricAppendAPIRequest(endpoint string, postdata []byte) (*http.Client
 	req.Header.Set("Content-Type", "application/json")
 
 	//FIXME other parameters should be proper values
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	return client, req, err
+}
+
+// RequestToAutoScalingResolveAPI send request to AutoScalingResolveAPI
+func RequestToAutoScalingResolveAPI(endpoint string, alias string) (*http.Response, error) {
+	client, req, err := buildAutoScalingResolveAPIRequest(endpoint, alias)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
+}
+
+func buildAutoScalingResolveAPIRequest(endpoint string, alias string) (*http.Client, *http.Request, error) {
+	uri := fmt.Sprintf("%s/autoscaling/resolve/%s", endpoint, alias)
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	return client, req, err
+}
+
+// RequestToAutoScalingInstanceAPI send request to AutoScalingInstanceAPI
+func RequestToAutoScalingInstanceAPI(endpoint, requestType string, postdata []byte) (*http.Response, error) {
+	client, req, err := buildAutoScalingRegisterInstanceAPIRequest(endpoint, requestType, postdata)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
+}
+
+func buildAutoScalingRegisterInstanceAPIRequest(endpoint, requestType string, postdata []byte) (*http.Client, *http.Request, error) {
+	uri := fmt.Sprintf("%s/autoscaling/instance/%s", endpoint, requestType)
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(postdata))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	return client, req, err
+}
+
+// RequestToAutoScalingLeaveAPI send request to AutoScalingInstanceAPI
+func RequestToAutoScalingLeaveAPI(endpoint string, postdata []byte) (*http.Response, error) {
+	client, req, err := buildAutoScalingLeaveAPIRequest(endpoint, postdata)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
+}
+
+func buildAutoScalingLeaveAPIRequest(endpoint string, postdata []byte) (*http.Client, *http.Request, error) {
+	uri := fmt.Sprintf("%s/autoscaling/leave", endpoint)
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(postdata))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}}

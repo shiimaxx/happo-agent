@@ -20,6 +20,42 @@ type InventoryData struct {
 	Created       string `json:"created"`
 }
 
+// InstanceData is actual instance
+type InstanceData struct {
+	IP           string       `json:"ip"`
+	InstanceID   string       `json:"instance_id"`
+	MetricConfig MetricConfig `json:"metric_config"`
+}
+
+// AutoScalingData name and actual instance data
+type AutoScalingData struct {
+	AutoScalingGroupName string `json:"autoscaling_group_name"`
+	Instances            []struct {
+		Alias        string       `json:"alias"`
+		InstanceData InstanceData `json:"instance_data"`
+	} `json:"instances"`
+}
+
+// AutoScalingConfigData is actual autoscaling config data
+type AutoScalingConfigData struct {
+	AutoScalingGroupName string `yaml:"autoscaling_group_name" json:"autoscaling_group_name"`
+	AutoScalingCount     int    `yaml:"autoscaling_count" json:"autoscaling_count"`
+	HostPrefix           string `yaml:"host_prefix" json:"host_prefix"`
+}
+
+// AutoScalingNodeConfigParameters is struct of parameters for autoscaling node
+type AutoScalingNodeConfigParameters struct {
+	BastionEndpoint string
+	JoinWaitSeconds int
+}
+
+// AutoScalingStatus represents the status of autoscaling group
+type AutoScalingStatus struct {
+	AutoScalingGroupName string `json:"autoscaling_group_name"`
+	Status               string `json:"status"`
+	Message              string `json:"message"`
+}
+
 // --- Request Parameter
 
 // ProxyRequest is /proxy API
@@ -66,6 +102,43 @@ type ManageRequest struct {
 	Hostdata CrawlConfigAgent `json:"hostdata"`
 }
 
+// AutoScalingRefreshRequest is /autoscaling/refresh API
+type AutoScalingRefreshRequest struct {
+	APIKey               string `json:"apikey"`
+	AutoScalingGroupName string `json:"autoscaling_group_name"`
+}
+
+// AutoScalingDeleteRequest is /autoscaling/delete API
+type AutoScalingDeleteRequest struct {
+	APIKey               string `json:"apikey"`
+	AutoScalingGroupName string `json:"autoscaling_group_name"`
+}
+
+// AutoScalingInstanceRegisterRequest is /autoscaling/instance/register API
+type AutoScalingInstanceRegisterRequest struct {
+	APIKey               string `json:"apikey"`
+	InstanceID           string `json:"instance_id"`
+	IP                   string `json:"ip"`
+	AutoScalingGroupName string `json:"autoscaling_group_name"`
+}
+
+// AutoScalingInstanceDeregisterRequest is /autoscaling/instance/delete API
+type AutoScalingInstanceDeregisterRequest struct {
+	APIKey     string `json:"apikey"`
+	InstanceID string `json:"instance_id"`
+}
+
+// AutoScalingConfigUpdateRequest is /autoscaling/config/update API
+type AutoScalingConfigUpdateRequest struct {
+	APIKey string            `json:"apikey"`
+	Config AutoScalingConfig `json:"config"`
+}
+
+// AutoScalingLeaveRequest is /autoscaling/leave API
+type AutoScalingLeaveRequest struct {
+	APIKey string `json:"apikey"`
+}
+
 // --- Response Parameter
 
 // MonitorResponse is /monitor API
@@ -100,6 +173,55 @@ type InventoryResponse struct {
 
 // ManageResponse is Manage API
 type ManageResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// AutoScalingResponse is /autoscaling API
+type AutoScalingResponse struct {
+	AutoScaling []AutoScalingData `json:"autoscaling"`
+}
+
+// AutoScalingResolveResponse is /autoscaling/resolve/:alias API
+type AutoScalingResolveResponse struct {
+	Status string `jspn:"status"`
+	IP     string `json:"ip"`
+}
+
+// AutoScalingRefreshResponse is /autoscaling/refresh API
+type AutoScalingRefreshResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// AutoScalingDeleteResponse is /autoscaling/delete API
+type AutoScalingDeleteResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// AutoScalingInstanceRegisterResponse is /autoscaling/instance/register API
+type AutoScalingInstanceRegisterResponse struct {
+	Status       string       `json:"status"`
+	Message      string       `json:"message"`
+	Alias        string       `json:"alias"`
+	InstanceData InstanceData `json:"instance_data"`
+}
+
+// AutoScalingInstanceDeregisterResponse is /autoscaling/instance/delete API
+type AutoScalingInstanceDeregisterResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// AutoScalingConfigUpdateResponse is /autoscaling/config/update API
+type AutoScalingConfigUpdateResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+// AutoScalingLeaveResponse is /autoscaling/leave API
+type AutoScalingLeaveResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }

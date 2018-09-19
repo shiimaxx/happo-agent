@@ -18,6 +18,7 @@ import (
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/codegangsta/martini-contrib/secure"
 	"github.com/go-martini/martini"
+	"github.com/heartbeatsjp/happo-agent/autoscaling"
 	"github.com/heartbeatsjp/happo-agent/collect"
 	"github.com/heartbeatsjp/happo-agent/db"
 	"github.com/heartbeatsjp/happo-agent/halib"
@@ -35,6 +36,9 @@ type daemonListener struct {
 	PublicKey      string
 	PrivateKey     string
 }
+
+var autoScalingBastionEndpoint string
+var autoScalingJoinWaitSeconds = halib.DefaultAutoScalingJoinWaitSeconds
 
 // --- functions
 
@@ -123,6 +127,53 @@ func CmdDaemon(c *cli.Context) {
 	db.MetricsMaxLifetimeSeconds = c.Int64("metrics-max-lifetime-seconds")
 	db.MachineStateMaxLifetimeSeconds = c.Int64("machine-state-max-lifetime-seconds")
 
+	isAutoScalingNode := c.Bool("enable-autoscaling-node")
+	if isAutoScalingNode {
+		client := autoscaling.NewNodeAWSClient()
+		path := c.String("autoscaling-parameter-store-path")
+		if path != "" {
+			p, err := client.GetAutoScalingNodeConfigParameters(path)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			autoScalingBastionEndpoint = p.BastionEndpoint
+			autoScalingJoinWaitSeconds = p.JoinWaitSeconds
+		} else {
+			autoScalingBastionEndpoint = c.String("autoscaling-bastion-endpoint")
+			autoScalingJoinWaitSeconds = c.Int("autoscaling-join-wait-seconds")
+		}
+
+		if autoScalingBastionEndpoint == "" {
+			log.Fatal(`missing "autoscaling-bastion-endpoint"`)
+		}
+		if autoScalingJoinWaitSeconds == 0 {
+			log.Warn(`"autoscaling-join-wait-seconds is 0: please check your autoscaling node settings`)
+		}
+		log.Info(
+			fmt.Sprintf(
+				"running as autoscaling node (autoscaling-bastion-endpoint: %s, autoscaling-join-wait-seconds: %d)",
+				autoScalingBastionEndpoint,
+				autoScalingJoinWaitSeconds,
+			),
+		)
+
+		model.AutoScalingBastionEndpoint = autoScalingBastionEndpoint
+
+		go func() {
+			time.Sleep(time.Duration(autoScalingJoinWaitSeconds) * time.Second)
+			metricConfig, err := autoscaling.JoinAutoScalingGroup(client, autoScalingBastionEndpoint)
+			if err != nil {
+				log.Error(fmt.Sprintf("failed to join: %s", err.Error()))
+				return
+			}
+			if err := collect.SaveMetricConfig(metricConfig, c.String("metric-config")); err != nil {
+				log.Error(fmt.Sprintf("failed to save metric config: %s", err.Error()))
+				return
+			}
+			log.Info(fmt.Sprintf("join succeed"))
+		}()
+	}
+
 	model.SetProxyTimeout(c.Int64("proxy-timeout-seconds"))
 
 	model.AppVersion = c.App.Version
@@ -132,6 +183,7 @@ func CmdDaemon(c *cli.Context) {
 
 	util.CommandTimeout = time.Duration(c.Int("command-timeout"))
 	model.MetricConfigFile = c.String("metric-config")
+	model.AutoScalingConfigFile = c.String("autoscaling-config")
 
 	model.ErrorLogIntervalSeconds = c.Int64("error-log-interval-seconds")
 	model.NagiosPluginPaths = c.String("nagios-plugin-paths")
@@ -143,9 +195,20 @@ func CmdDaemon(c *cli.Context) {
 	m.Post("/metric", binding.Json(halib.MetricRequest{}), model.Metric)
 	m.Post("/metric/append", binding.Json(halib.MetricAppendRequest{}), model.MetricAppend)
 	m.Post("/metric/config/update", binding.Json(halib.MetricConfigUpdateRequest{}), model.MetricConfigUpdate)
+	m.Post("/autoscaling/refresh", binding.Json(halib.AutoScalingRefreshRequest{}), model.AutoScalingRefresh)
+	m.Post("/autoscaling/delete", binding.Json(halib.AutoScalingDeleteRequest{}), model.AutoScalingDelete)
+	m.Post("/autoscaling/instance/register", binding.Json(halib.AutoScalingInstanceRegisterRequest{}), model.AutoScalingInstanceRegister)
+	m.Post("/autoscaling/instance/deregister", binding.Json(halib.AutoScalingInstanceDeregisterRequest{}), model.AutoScalingInstanceDeregister)
+	m.Post("/autoscaling/config/update", binding.Json(halib.AutoScalingConfigUpdateRequest{}), model.AutoScalingConfigUpdate)
+	if isAutoScalingNode {
+		m.Post("/autoscaling/leave", binding.Json(halib.AutoScalingLeaveRequest{}), model.AutoScalingLeave)
+	}
+	m.Get("/autoscaling", model.AutoScaling)
+	m.Get("/autoscaling/resolve/:alias", model.AutoScalingResolve)
 	m.Get("/metric/status", model.MetricDataBufferStatus)
 	m.Get("/status", model.Status)
 	m.Get("/status/memory", model.MemoryStatus)
+	m.Get("/status/autoscaling", model.AutoScalingStatus)
 	if enableRequestStatusMiddlware {
 		m.Get("/status/request", model.RequestStatus)
 	}
