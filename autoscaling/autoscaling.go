@@ -381,7 +381,7 @@ func RefreshAutoScalingInstances(client *AWSClient, autoScalingGroupName, hostPr
 
 		for _, instance := range newInstances {
 			for i := 0; i < autoscalingCount; i++ {
-				key := fmt.Sprintf("ag-%s-%s-%d", autoScalingGroupName, hostPrefix, i+1)
+				key := fmt.Sprintf("ag-%s-%s-%02d", autoScalingGroupName, hostPrefix, i+1)
 				if _, ok := actualInstances[key]; !ok {
 					if _, ok := registeredInstances[key]; ok {
 						instance.MetricConfig = registeredInstances[key].MetricConfig
@@ -400,7 +400,7 @@ func RefreshAutoScalingInstances(client *AWSClient, autoScalingGroupName, hostPr
 			IP:           "",
 			MetricConfig: halib.MetricConfig{},
 		}
-		key := fmt.Sprintf("ag-%s-%s-%d", autoScalingGroupName, hostPrefix, i+1)
+		key := fmt.Sprintf("ag-%s-%s-%02d", autoScalingGroupName, hostPrefix, i+1)
 		if _, ok := actualInstances[key]; !ok {
 			if _, ok := registeredInstances[key]; ok {
 				emptyInstance.MetricConfig = registeredInstances[key].MetricConfig
