@@ -410,11 +410,6 @@ func TestRefreshAutoScalingInstances(t *testing.T) {
 					MetricConfig: halib.MetricConfig{},
 				},
 				{
-					InstanceID:   "i-jjjjjj",
-					IP:           "192.0.2.20",
-					MetricConfig: halib.MetricConfig{},
-				},
-				{
 					InstanceID:   "i-bbbbbb",
 					IP:           "192.0.2.12",
 					MetricConfig: halib.MetricConfig{},
@@ -454,6 +449,11 @@ func TestRefreshAutoScalingInstances(t *testing.T) {
 					IP:           "192.0.2.19",
 					MetricConfig: halib.MetricConfig{},
 				},
+				{
+					InstanceID:   "i-jjjjjj",
+					IP:           "192.0.2.20",
+					MetricConfig: halib.MetricConfig{},
+				},
 			},
 		},
 		{
@@ -465,11 +465,6 @@ func TestRefreshAutoScalingInstances(t *testing.T) {
 				{
 					InstanceID:   "i-aaaaaa",
 					IP:           "192.0.2.11",
-					MetricConfig: halib.MetricConfig{},
-				},
-				{
-					InstanceID:   "",
-					IP:           "",
 					MetricConfig: halib.MetricConfig{},
 				},
 				{
@@ -500,6 +495,11 @@ func TestRefreshAutoScalingInstances(t *testing.T) {
 				{
 					InstanceID:   "i-jjjjjj",
 					IP:           "192.0.2.20",
+					MetricConfig: halib.MetricConfig{},
+				},
+				{
+					InstanceID:   "",
+					IP:           "",
 					MetricConfig: halib.MetricConfig{},
 				},
 				{
@@ -717,8 +717,8 @@ func TestAliasToIP(t *testing.T) {
 		isNormalTest bool
 	}{
 		{
-			name:         "dummy-prod-ag-dummy-prod-app-1",
-			input:        "dummy-prod-ag-dummy-prod-app-1",
+			name:         "dummy-prod-ag-dummy-prod-app-01",
+			input:        "dummy-prod-ag-dummy-prod-app-01",
 			expected:     "192.0.2.11",
 			isNormalTest: true,
 		},
