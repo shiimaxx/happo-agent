@@ -61,12 +61,6 @@ Use api client commands, `happo-agent` calls endpoint url which is client manage
 /path/to/happo-agent add -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -i [OWN_IP] -H [HOSTNAME] [-p BASTON_IP]
 ```
 
-#### AutoScaling add request
-
-```
-/path/to/happo-agent add_ag -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -n [AUTOSCALING_GROUP_NAME] -H [HOST_PREFIX] -c [AUTOSCALING_COUNT] [-p BASTON_IP]
-```
-
 #### Is host available ?
 
 ```
@@ -120,7 +114,58 @@ metrics:
   - ...
 ```
 
-### AutoScaling configuration
+## With AWS EC2 Auto Scaling
+
+Since the 2.0.0 release, AWS EC2 Auto Scaling is supported.
+
+Bastion's agent stores Auto Scaling instance info like an instance id, private ip address in dbms.
+Also each instances are assigned alias, that too stored in dbms too.
+
+e.g)
+
+※ Be careful this is different of structure of actual stored in dbms.
+
+| Alias | Instance id | Private ip address |
+|-------|-------------|--------------------|
+| hb-autoscaling-web-01 | i-aaaaaa | 192.0.2.1 |
+| hb-autoscaling-web-02 | i-bbbbbb | 192.0.2.2 |
+| hb-autoscaling-web-03 | i-cccccc | 192.0.2.3 |
+| : | : | : |
+
+Instance info assigned to alias is automatic change according to the actual change of Auto Scaling instances.
+
+Bastion's agent transfers request to private ip address of resolved from alias when recieved request for alias.
+
+### Subcommands
+
+#### AutoScaling add request
+
+Subcommand for [API client mode](#api-client-mode)
+
+```
+/path/to/happo-agent add_ag -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -n [AUTOSCALING_GROUP_NAME] -H [HOST_PREFIX] -c [AUTOSCALING_COUNT] [-p BASTON_IP]
+```
+
+#### Resolve from alias to private ip
+
+```
+/path/to/happo-agent resolve_alias -b [BASTION_ENDPOINT_URL] <alias>
+```
+
+#### Deregister node from instances information stored bastion
+
+```
+/path/to/happo-agent leave -n [NODE_ENDPOINT_URL]
+```
+
+### Setting for bastion
+
+```bash
+$ cd /etc/happo
+$ sudo touch autoscaling.yaml
+```
+
+#### AutoScaling configuration
 
 autoscaling.yaml
 
@@ -147,6 +192,29 @@ autoscalings:
 - autoscaling_group_name: sysx-web
   autoscaling_count: 4
   host_prefix: a-ap
+```
+
+### Setting for node(instance to be launched by AWS EC2 Auto Scaling)
+
+Should be specify some parameters in `/etc/default/happo-agent.env`.
+
+```
+HAPPO_AGENT_DAEMON_AUTOSCALING_NODE="true"
+HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT="https://192.0.2.100:6777"
+HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS="60"
+```
+
+You can also specify `HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT` and `HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS` in AWS SSM Parameter Store.
+See also [contrib/etc/default/happo-agent.env](https://github.com/heartbeatsjp/happo-agent/blob/master/contrib/etc/default/happo-agent.env).
+
+Enable Upstart job of leave at node shutdown
+
+```bash
+$ sudo install contrib/etc/init/happo-agent-autoscaling-leave.conf   /etc/init/happo-agent-autoscaling-leave.conf
+$ sed -ie "s/^#start on/start on/" /etc/init/happo-agent-autoscaling-leave.conf
+$ sed -ie "s/^#pre-stop/pre-stop/" /etc/init/happo-agent.conf
+$ sudo initctl reload-configuration
+$ sudo initctl restart happo-agent
 ```
 
 ## API
@@ -434,6 +502,11 @@ Register autoscaling instance
                 - plugin_name: metric plugin name
                 - plugin_option: metric plugin option
 
+```
+$ wget -q --no-check-certificate -O - https://127.0.0.1:6777/autoscaling/instance/register --post-data="{\"apikey\":\"\",\"autoscaling_group_name\": \"hb-autoscaling\",\"ip\":\"192.0.2.1\",\"instance_id\":\"i-aaaaaa\"}"
+{"status":"OK","message":"","alias":"hb-autoscaling-web-01","instance_data":{"ip":"192.0.2.1","instance_id":"i-aaaaaa","metric_config":{"Metrics":null}}}
+```
+
 ### /autoscaling/instance/deregister
 
 Deregister autocaling instances
@@ -448,6 +521,30 @@ Deregister autocaling instances
 - Return variables
     - status: result status
     - message: message from agent (if error occurred)
+
+```
+$ wget -q --no-check-certificate -O - https://127.0.0.1:6777/autoscaling/instance/deregister --post-data="{\"apikey\":\"\",\"instance_id\":\"i-aaaaaa\"}"
+{"status":"OK","message":""}
+```
+
+### /autoscaling/leave
+
+Deregister node from autoscaling bastion. This handler is available only in agent running with autoscaling node
+
+- Input format
+    - JSON
+- Input variables
+    - apikey: ""
+- Return format
+    - JSON
+- Return variables
+    - status: result status
+    - message: message from agent (if error occurred)
+
+```
+wget -q --no-check-certificate -O -  https://127.0.0.1:6777/autoscaling/leave --post-data="{\"apikey\":\"\"}"
+{"status":"OK","message":""}
+```
 
 ### /status
 
@@ -531,6 +628,11 @@ Get autoscaling status
         - autoscaling_group_name: autoscaling group name
         - status: result status
         - message: message from agent (if error occurred)
+
+```
+$ wget -q --no-check-certificate -O -  https://127.0.0.1:6777/status/autoscaling
+[{"autoscaling_group_name":"hb-autoscaling","status":"ok","message":""}]
+```
 
 ### /machine-state
 
