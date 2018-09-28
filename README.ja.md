@@ -232,6 +232,16 @@ $ sudo initctl reload-configuration
 $ sudo initctl restart happo-agent
 ```
 
+### AWS認証情報の設定
+
+AWS EC2 Auto Scalingの機能を利用する場合、happo-agentはAWS APIを利用します。以下のいずれかの方法でAWS認証情報を設定してください。
+　
+- EC2 IAM role
+- 認証ファイル (`~/.aws/credentials`)
+- 設定ファイル (`~/.aws/config`)
+    - `AWS_SDK_LOAD_CONFIG` を設定している場合
+- 環境変数
+
 ## API
 
 - 待ち受けポート 6777 (Default)

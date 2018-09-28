@@ -217,6 +217,16 @@ $ sudo initctl reload-configuration
 $ sudo initctl restart happo-agent
 ```
 
+### Setting AWS credentials
+
+happo-agent uses AWS API when using feature of AWS EC2 Auto Scaling, you should specify a AWS credentials setting one of the following way.
+　
+- EC2 IAM role
+- Credentials file (`~/.aws/credentials`)
+- Configuration file (`~/.aws/config`)
+    - If the `AWS_SDK_LOAD_CONFIG` is set
+- Environment variables
+
 ## API
 
 - Listen port: 6777 (Default)
