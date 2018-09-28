@@ -150,6 +150,20 @@ metrics:
 
 エイリアスに紐づくインスタンス情報は、実際のAutoScalingによるインスタンスの入れ替わりに合わせて自動で変更されます。
 踏み台サーバのhappo-agentは、エイリアス宛のリクエストを受信すると、それをIPアドレスに解決してリクエストを転送します。
+具体的な挙動はrequest_type([/proxy](#proxy)のパラメータ)によって異なります。
+
+監視
+
+- `request_type: monitor`の場合、エイリアスから解決したIPアドレスにリクエストを転送します
+
+メトリック取得
+
+- `request_type: metric`の場合、エイリアスから解決したIPアドレスにリクエストを転送します
+- `request_type: metric/config/update`の場合(`proxy_hostport` はエイリアスではなくAuto Scaling Group名である必要があります)、Auto Scaling Groupに含まれるアクティブなインスタンスにリクエストを転送します
+
+インベントリ情報取得
+
+- `request_type: inventory`の場合(`proxy_hostport` `proxy_hostport` はエイリアスではなくAuto Scaling Group名である必要があります)、Auto Scaling Groupに含まれるアクティブなインスタンスのうちの1台にリクエストを転送します
 
 ### サブコマンド
 

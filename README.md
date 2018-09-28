@@ -134,7 +134,20 @@ e.g)
 
 Instance info assigned to alias is automatic change according to the actual change of Auto Scaling instances.
 
-Bastion's agent transfers request to private ip address of resolved from alias when recieved request for alias.
+Bastion's agent transfers request to private ip address resolved from alias when received request of proxy to alias. This concrete behave is difference depend on request type(parameter of [/proxy](#proxy)).
+
+Monitoring
+
+- When `request_type: monitor`, proxy to private ip address resolved from alias
+
+Metric collection
+
+- When `request_type: metric`, proxy to private ip address resolved from alias
+- When `request_type: metric/config/update`(`proxy_hostport` need to be Auto Scaling Group Name instead of alias), proxy to active instances contained in Auto Scaling Group
+
+Inventory collection
+
+- When `request_type: inventory`(`proxy_hostport` need to be Auto Scaling Group Name instead of alias), proxy to one of active instance contained in Auto Scaling Group
 
 ### Subcommands
 
