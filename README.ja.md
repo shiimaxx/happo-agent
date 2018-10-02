@@ -60,14 +60,6 @@
 /path/to/happo-agent add -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -i [OWN_IP] -H [HOSTNAME] [-p BASTON_IP]
 ```
 
-#### AutoScalingグループ登録
-
-AutoScalingグループの存在を通知します。
-
-```
-/path/to/happo-agent add_ag -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -n [AUTOSCALING_GROUP_NAME] -H [HOST_PREFIX] -c [AUTOSCALING_COUNT] [-p BASTON_IP]
-```
-
 #### 登録済みかの確認
 
 このエージェントが登録されているかを確認します。
@@ -138,7 +130,71 @@ metrics:
   - (以上同じ)
 ```
 
-## AutoScaling設定
+## With AWS EC2 Auto Scaling
+
+2.0.0リリースからAWS EC2 Auto Scalingをサポートしています。
+
+踏み台サーバのhappo-agentは、インスタンスID、IPアドレスなどのAutoScalingインスタンスの情報をdbmsに保存します。
+また、それらのインスタンスにはエイリアスが紐付けられます。
+
+保存されるインスタンス情報の例)
+
+※ 以下は実際にdbmsに保存されるデータ構造とは異なるので、注意してください。
+
+| エイリアス | インスタンスID | IPアドレス |
+|-------|-------------|--------------------|
+| hb-autoscaling-web-01 | i-aaaaaa | 192.0.2.1 |
+| hb-autoscaling-web-02 | i-bbbbbb | 192.0.2.2 |
+| hb-autoscaling-web-03 | i-cccccc | 192.0.2.3 |
+| : | : | : |
+
+エイリアスに紐づくインスタンス情報は、実際のAutoScalingによるインスタンスの入れ替わりに合わせて自動で変更されます。
+踏み台サーバのhappo-agentは、エイリアス宛のリクエストを受信すると、それをIPアドレスに解決してリクエストを転送します。
+具体的な挙動はrequest_type([/proxy](#proxy)のパラメータ)によって異なります。
+
+監視
+
+- `request_type: monitor`の場合、エイリアスから解決したIPアドレスにリクエストを転送します
+
+メトリック取得
+
+- `request_type: metric`の場合、エイリアスから解決したIPアドレスにリクエストを転送します
+- `request_type: metric/config/update`の場合(`proxy_hostport` はエイリアスではなくAuto Scaling Group名である必要があります)、Auto Scaling Groupに含まれるアクティブなインスタンスにリクエストを転送します
+
+インベントリ情報取得
+
+- `request_type: inventory`の場合(`proxy_hostport` `proxy_hostport` はエイリアスではなくAuto Scaling Group名である必要があります)、Auto Scaling Groupに含まれるアクティブなインスタンスのうちの1台にリクエストを転送します
+
+### サブコマンド
+
+#### AutoScalingグループ登録
+
+AutoScalingグループの存在を通知します。[APIクライアントモード](#api%E3%82%AF%E3%83%A9%E3%82%A4%E3%82%A2%E3%83%B3%E3%83%88%E3%83%A2%E3%83%BC%E3%83%89)のサブコマンドです。
+
+```
+/path/to/happo-agent add_ag -e [ENDPOINT_URL] -g [GROUP_NAME[!SUB_GROUP_NAME]] -n [AUTOSCALING_GROUP_NAME] -H [HOST_PREFIX] -c [AUTOSCALING_COUNT] [-p BASTON_IP]
+```
+
+#### エイリアスをIPアドレスに解決
+
+```
+/path/to/happo-agent resolve_alias -b [BASTION_ENDPOINT_URL] <alias>
+```
+
+#### 踏み台サーバのAutoScaling情報からノードを登録解除
+
+```
+/path/to/happo-agent leave -n [NODE_ENDPOINT_URL]
+```
+
+### 踏み台サーバ向けの設定
+
+```
+$ cd /etc/happo
+$ sudo touch autoscaling.yaml
+```
+
+#### AutoScaling設定
 
 `autoscaling.yaml`ファイルは、次の構造で記述します。
 
@@ -166,6 +222,39 @@ autoscalings:
   autoscaling_count: 4
   host_prefix: a-ap
 ```
+
+### ノード向けの設定
+
+`/etc/default/happo-agent.env` で以下のパラメータを指定してください。
+
+```
+HAPPO_AGENT_DAEMON_AUTOSCALING_NODE="true"
+HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT="https://192.0.2.100:6777"
+HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS="60"
+```
+
+`HAPPO_AGENT_DAEMON_AUTOSCALING_BASTION_ENDPOINT`と`HAPPO_AGENT_DAEMON_AUTOSCALING_JOIN_WAIT_SECONDS`はAWS SSM Parameter Storeで設定することもできます。詳細は[contrib/etc/default/happo-agent.env](https://github.com/heartbeatsjp/happo-agent/blob/master/contrib/etc/default/happo-agent.env)を参照してください。
+
+
+ノードがシャットダウンするときに、踏み台サーバのAutoScaling情報からノードを登録解除するUpstartジョブを有効にします。
+
+```
+$ sudo install contrib/etc/init/happo-agent-autoscaling-leave.conf   /etc/init/happo-agent-autoscaling-leave.conf
+$ sed -ie "s/^#start on/start on/" /etc/init/happo-agent-autoscaling-leave.conf
+$ sed -ie "s/^#pre-stop/pre-stop/" /etc/init/happo-agent.conf
+$ sudo initctl reload-configuration
+$ sudo initctl restart happo-agent
+```
+
+### AWS認証情報の設定
+
+AWS EC2 Auto Scalingの機能を利用する場合、happo-agentはAWS APIを利用します。以下のいずれかの方法でAWS認証情報を設定してください。
+　
+- EC2 IAM role
+- 認証ファイル (`~/.aws/credentials`)
+- 設定ファイル (`~/.aws/config`)
+    - `AWS_SDK_LOAD_CONFIG` を設定している場合
+- 環境変数
 
 ## API
 
@@ -422,9 +511,9 @@ AutoScalingのインスタンスを登録します。
     - autoscaling_group_name: AutoScaling Group名
     - ip: プライベートIPアドレス
     - instance_id: インスタンスID
-- 出力形式
+- 返り値の形式
     - JSON
-- 出力変数
+- 返り値の変数
     - status: 実行結果のステータス
     - message: エージェントからのメッセージ (特にエラーがあれば掲載)
     - alias: インスタンスに割り当てられたエイリアス
@@ -435,6 +524,71 @@ AutoScalingのインスタンスを登録します。
             - (Array)
                 - plugin_name: メトリックプラグイン名
                 - plugin_option: メトリックプラグインのオプション
+
+```
+$ wget -q --no-check-certificate -O - https://127.0.0.1:6777/autoscaling/instance/register --post-data="{\"apikey\":\"\",\"autoscaling_group_name\": \"hb-autoscaling\",\"ip\":\"192.0.2.1\",\"instance_id\":\"i-aaaaaa\"}"
+{"status":"OK","message":"","alias":"hb-autoscaling-web-01","instance_data":{"ip":"192.0.2.1","instance_id":"i-aaaaaa","metric_config":{"Metrics":null}}}
+```
+
+### /autoscaling/instance/deregister
+
+AutoScalingのインスタンスを登録解除します。
+
+- 入力形式
+    - JSON
+- 入力変数
+    - apikey: ""
+    - instance_id: インスタンスID
+- 返り値の形式
+    - JSON
+- 返り値の変数
+    - status: 実行結果のステータス
+    - message: エージェントからのメッセージ (特にエラーがあれば掲載)
+
+```
+$ wget -q --no-check-certificate -O - https://127.0.0.1:6777/autoscaling/instance/deregister --post-data="{\"apikey\":\"\",\"instance_id\":\"i-aaaaaa\"}"
+{"status":"OK","message":""}
+```
+
+### /autoscaling/leave
+
+踏み台サーバのAutoScaling情報からノードを登録解除します。このAPIはAutoScalingノードとして稼働する場合のみ利用できます。
+
+- 入力形式
+    - JSON
+- 入力変数
+    - apikey: ""
+- 返り値の形式
+    - JSON
+- 返り値の変数
+    - status: 実行結果のステータス
+    - message: エージェントからのメッセージ (特にエラーがあれば掲載)
+
+```
+wget -q --no-check-certificate -O -  https://127.0.0.1:6777/autoscaling/leave --post-data="{\"apikey\":\"\"}"
+{"status":"OK","message":""}
+```
+
+### /status/autoscaling
+
+Autocalingのステータスを取得します。
+
+- 入力形式
+    - なし
+- 入力変数
+    - なし
+- 返り値の形式
+    - JSON
+- 返り値の変数　
+    - (Array)
+        - autoscaling_group_name: AutoScaling Group名
+        - status: 実行結果のステータス
+        - message: エージェントからのメッセージ (特にエラーがあれば掲載)
+
+```
+$ wget -q --no-check-certificate -O -  https://127.0.0.1:6777/status/autoscaling
+[{"autoscaling_group_name":"hb-autoscaling","status":"ok","message":""}]
+```
 
 ## Contribution
 
