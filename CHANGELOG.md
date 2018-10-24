@@ -5,6 +5,7 @@
 - Merge pull request #66 from shiimaxx:default-autoscaling-config (Tue Oct 2 19:22:44 2018 +0900) eca4f32 
 - Merge branch 'doc-autoscaling' of git://github.com/shiimaxx/happo-agent into shiimaxx-doc-autoscaling (Tue Oct 2 19:27:21 2018 +0900) e7cefb6 
 - Merge branch 'shiimaxx-doc-autoscaling' (Tue Oct 2 19:27:34 2018 +0900) 73c3d91
+- Merge pull request #68 from shiimaxx/2.0.0-changelog (Wed Oct 24 13:22:21 2018 +0900) e0aae09
 
 ### 1.1.1 (Tue Jul 17 11:34:14 2018 +0900)
 
