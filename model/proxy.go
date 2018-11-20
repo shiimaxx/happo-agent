@@ -10,9 +10,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
-
 	"sync"
+	"time"
 
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/heartbeatsjp/happo-agent/autoscaling"
@@ -24,10 +23,8 @@ import (
 // --- Global Variables
 var (
 	// See http://golang.org/pkg/net/http/#Client
-	tr = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	_httpClient = &http.Client{Transport: tr}
+	tr          = http.DefaultTransport.(*http.Transport)
+	_httpClient = http.DefaultClient
 
 	refreshAutoScalingChan            = make(chan halib.AutoScalingConfigData)
 	refreshAutoScalingMutex           = sync.Mutex{}
@@ -36,6 +33,9 @@ var (
 )
 
 func init() {
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	_httpClient.Transport = tr
+
 	go func() {
 		for {
 			select {
