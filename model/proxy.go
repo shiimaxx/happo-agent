@@ -33,6 +33,9 @@ var (
 )
 
 func init() {
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	_httpClient.Transport = tr
+
 	go func() {
 		for {
 			select {
@@ -129,8 +132,6 @@ func postToAgent(host string, port int, requestType string, jsonData []byte) (in
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
-	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	_httpClient.Transport = tr
 	resp, err := _httpClient.Do(req)
 	if err != nil {
 		if errTimeout, ok := err.(net.Error); ok && errTimeout.Timeout() {
