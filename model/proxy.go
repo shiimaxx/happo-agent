@@ -24,10 +24,8 @@ import (
 // --- Global Variables
 var (
 	// See http://golang.org/pkg/net/http/#Client
-	tr = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	_httpClient = &http.Client{Transport: tr}
+	tr          = *http.DefaultTransport.(*http.Transport)
+	_httpClient = http.DefaultClient
 
 	refreshAutoScalingChan            = make(chan halib.AutoScalingConfigData)
 	refreshAutoScalingMutex           = sync.Mutex{}
@@ -132,6 +130,8 @@ func postToAgent(host string, port int, requestType string, jsonData []byte) (in
 	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	_httpClient.Transport = &tr
 	resp, err := _httpClient.Do(req)
 	if err != nil {
 		if errTimeout, ok := err.(net.Error); ok && errTimeout.Timeout() {
