@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -107,6 +108,12 @@ func Proxy(proxyRequest halib.ProxyRequest, r render.Render) (int, string) {
 
 func getAutoScalingInfo(nextHost string) halib.AutoScalingConfigData {
 	log := util.HappoAgentLogger()
+
+	if _, err := os.Stat(AutoScalingConfigFile); os.IsNotExist(err) {
+		log.Info(err)
+		return halib.AutoScalingConfigData{}
+	}
+
 	var autoScalingConfigData halib.AutoScalingConfigData
 	autoScalingList, err := autoscaling.GetAutoScalingConfig(AutoScalingConfigFile)
 	if err != nil {
