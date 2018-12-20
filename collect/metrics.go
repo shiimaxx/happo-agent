@@ -37,6 +37,10 @@ func Metrics(configPath string) error {
 		return err
 	}
 
+	if len(metricList.Metrics) < 1 {
+		return nil
+	}
+
 	metricTotalCount := 0
 	for _, metricHostList := range metricList.Metrics {
 		for _, metricPlugin := range metricHostList.Plugins {
