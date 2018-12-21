@@ -16,6 +16,7 @@ import (
 )
 
 const TestConfigFile = "./metrics_test.yaml"
+const TestEmptyConfigFile = "./metrics_test_empty.yaml"
 const TestPlugin = "metrics_test_plugin"
 
 var ConfigData = halib.MetricConfig{
@@ -52,6 +53,13 @@ func TestGetCollectedMetrics1(t *testing.T) {
 
 	ret := GetCollectedMetrics()
 	assert.NotNil(t, ret)
+	assert.Nil(t, GetCollectedMetrics())
+}
+
+func TestGetCollectedMetrics2(t *testing.T) {
+	err := Metrics(TestEmptyConfigFile)
+	assert.Nil(t, err)
+
 	assert.Nil(t, GetCollectedMetrics())
 }
 
