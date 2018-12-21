@@ -18,6 +18,8 @@ import (
 var (
 	// AppVersion equals main.Version
 	AppVersion string
+	// DisableCollectMetrics included to /status response
+	DisableCollectMetrics bool
 
 	startAt = time.Now()
 )
@@ -64,12 +66,13 @@ func Status(req *http.Request, r render.Render) {
 	log.Debugf("leveldbProperties:%v", leveldbProperties)
 
 	statusResponse := &halib.StatusResponse{
-		AppVersion:         AppVersion,
-		UptimeSeconds:      int64(time.Since(startAt) / time.Second),
-		NumGoroutine:       runtime.NumGoroutine(),
-		MetricBufferStatus: collect.GetMetricDataBufferStatus(false),
-		Callers:            callers,
-		LevelDBProperties:  leveldbProperties,
+		AppVersion:            AppVersion,
+		UptimeSeconds:         int64(time.Since(startAt) / time.Second),
+		DisableCollectMetrics: DisableCollectMetrics,
+		NumGoroutine:          runtime.NumGoroutine(),
+		MetricBufferStatus:    collect.GetMetricDataBufferStatus(false),
+		Callers:               callers,
+		LevelDBProperties:     leveldbProperties,
 	}
 	r.JSON(http.StatusOK, statusResponse)
 }
