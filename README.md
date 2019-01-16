@@ -569,6 +569,25 @@ wget -q --no-check-certificate -O -  https://127.0.0.1:6777/autoscaling/leave --
 {"status":"OK","message":""}
 ```
 
+### /autoscaling/health/:alias
+
+- Input format
+    - None
+- Input variables
+    - None
+- Return format
+    - JSON
+- Return variables
+    - status: result status
+    - message: message from agent (if error occurred)
+    - ip: private ip address by Amazon EC2
+
+```
+# wget -q --no-check-certificate -O -  https://127.0.0.1:6777/autoscaling/health/hb-autoscaling-app-1
+{"Status":"OK","message":"",ip:"192.0.2.1"}
+```
+
+
 ### /status
 
 Get happo-agent status
