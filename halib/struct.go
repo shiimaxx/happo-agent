@@ -226,6 +226,13 @@ type AutoScalingLeaveResponse struct {
 	Message string `json:"message"`
 }
 
+// AutoScalingHealthResponse is /autoscaling/health/:alias API
+type AutoScalingHealthResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	IP      string `json:"ip"`
+}
+
 // StatusResponse is /status API
 type StatusResponse struct {
 	AppVersion            string            `json:"app_version"`
