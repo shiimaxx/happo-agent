@@ -95,7 +95,7 @@ daemontest:
         code: |
             set -e
             TEST_DURATION_SEC=2700
-            CPU_THRESHOLD_PERCENT=4
+            CPU_THRESHOLD_PERCENT=7
             CPU_THRESHOLD_SEC=$(echo "${TEST_DURATION_SEC} * ${CPU_THRESHOLD_PERCENT:?} / 100" | bc)
             MEM_THRESHOLD_KB=51200
             DB_DISK_THRESHOLD_KB=250
