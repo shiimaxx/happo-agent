@@ -17,7 +17,6 @@ import (
 )
 
 func TestAutoScalingHealth(t *testing.T) {
-
 	setup()
 	defer teardown()
 
