@@ -212,27 +212,22 @@ func buildMetricAppendAPIRequest(endpoint string, postdata []byte) (*http.Client
 
 // RequestToCheckAvailableAPI send request to AutoScalingHealthAPI
 func RequestToCheckAvailableAPI(endpoint string) (*http.Response, error) {
-	client, req, err := buildCheckAvailableAPIRequest(endpoint)
-	if err != nil {
-		return nil, err
-	}
-	return client.Do(req)
-}
-
-func buildCheckAvailableAPIRequest(endpoint string) (*http.Client, *http.Request, error) {
 	uri := fmt.Sprintf("%s/", endpoint)
 	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	req = req.WithContext(ctx)
 
 	client := &http.Client{Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}}
-	return client, req, err
+
+	return client.Do(req)
 }
 
 // RequestToAutoScalingResolveAPI send request to AutoScalingResolveAPI
