@@ -3,6 +3,7 @@ package util
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -203,6 +204,31 @@ func buildMetricAppendAPIRequest(endpoint string, postdata []byte) (*http.Client
 	req.Header.Set("Content-Type", "application/json")
 
 	//FIXME other parameters should be proper values
+	client := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}}
+	return client, req, err
+}
+
+// RequestToCheckAvailableAPI send request to AutoScalingHealthAPI
+func RequestToCheckAvailableAPI(endpoint string) (*http.Response, error) {
+	client, req, err := buildCheckAvailableAPIRequest(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
+}
+
+func buildCheckAvailableAPIRequest(endpoint string) (*http.Client, *http.Request, error) {
+	uri := fmt.Sprintf("%s/", endpoint)
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	req = req.WithContext(ctx)
+
 	client := &http.Client{Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}}

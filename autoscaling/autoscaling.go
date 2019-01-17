@@ -3,24 +3,21 @@ package autoscaling
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/heartbeatsjp/happo-agent/db"
 	"github.com/heartbeatsjp/happo-agent/halib"
 	"github.com/heartbeatsjp/happo-agent/util"
+	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 	leveldbUtil "github.com/syndtr/goleveldb/leveldb/util"
-
-	"encoding/json"
-
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // AutoScaling list autoscaling instances

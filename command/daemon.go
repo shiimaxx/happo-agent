@@ -205,6 +205,7 @@ func CmdDaemon(c *cli.Context) {
 	}
 	m.Get("/autoscaling", model.AutoScaling)
 	m.Get("/autoscaling/resolve/:alias", model.AutoScalingResolve)
+	m.Get("/autoscaling/health/:alias", model.AutoScalingHealth)
 	m.Get("/metric/status", model.MetricDataBufferStatus)
 	m.Get("/status", model.Status)
 	m.Get("/status/memory", model.MemoryStatus)
