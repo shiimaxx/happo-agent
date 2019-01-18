@@ -376,7 +376,7 @@ var Commands = []cli.Command{
 			},
 			cli.BoolFlag{
 				Name:  "all",
-				Usage: "",
+				Usage: "List all aliases that contain alias not attached EC2 instance",
 			},
 		},
 	},
