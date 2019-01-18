@@ -210,7 +210,7 @@ func buildMetricAppendAPIRequest(endpoint string, postdata []byte) (*http.Client
 	return client, req, err
 }
 
-// RequestToAutoScalingAPI send request to AutoScalingHealthAPI
+// RequestToAutoScalingAPI send request to AutoScalingAPI
 func RequestToAutoScalingAPI(endpoint string) (*http.Response, error) {
 	uri := fmt.Sprintf("%s/autoscaling", endpoint)
 	req, err := http.NewRequest("GET", uri, nil)
