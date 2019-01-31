@@ -375,8 +375,9 @@ var Commands = []cli.Command{
 				EnvVar: "HAPPO_AGENT_AUTOSCALING_GROUP_NAME",
 			},
 			cli.BoolFlag{
-				Name:  "all",
-				Usage: "List all aliases that contain alias not attached EC2 instance",
+				Name:   "all",
+				Usage:  "List all aliases that contain alias not attached EC2 instance",
+				EnvVar: "HAPPO_AGENT_AUTOSCALING_LIST_ALIASES_ALL",
 			},
 		},
 	},
