@@ -53,7 +53,7 @@ func listAliases(bastionEndpoint, agName string, listAll bool) (string, error) {
 		if agName == "" || agName == a.AutoScalingGroupName {
 			for _, i := range a.Instances {
 				if listAll || i.InstanceData.IP != "" {
-					out = out + fmt.Sprintln(i.Alias+","+i.InstanceData.IP+","+i.InstanceData.InstanceID)
+					out = out + strings.Join([]string{i.Alias, i.InstanceData.IP, i.InstanceData.InstanceID}, ",") + "\n"
 				}
 			}
 		}
