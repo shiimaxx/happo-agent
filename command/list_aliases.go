@@ -48,17 +48,16 @@ func listAliases(bastionEndpoint, agName string, listAll bool) (string, error) {
 		return "", errors.New("Missing auto scaling group")
 	}
 
-	var out string
+	var outs []string
 	for _, a := range autoScalingResponse.AutoScaling {
 		if agName == "" || agName == a.AutoScalingGroupName {
 			for _, i := range a.Instances {
 				if listAll || i.InstanceData.IP != "" {
-					out = out + strings.Join([]string{i.Alias, i.InstanceData.IP, i.InstanceData.InstanceID}, ",") + "\n"
+					outs = append(outs, strings.Join([]string{i.Alias, i.InstanceData.IP, i.InstanceData.InstanceID}, ","))
 				}
 			}
 		}
 	}
-	out = strings.TrimSuffix(out, "\n")
 
-	return out, nil
+	return strings.Join(outs, "\n"), nil
 }
