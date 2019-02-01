@@ -171,6 +171,13 @@ Subcommand for [API client mode](#api-client-mode)
 /path/to/happo-agent leave -n [NODE_ENDPOINT_URL]
 ```
 
+#### List aliases
+
+```
+/path/to/happo-agent list_aliases -b [BASTION_ENDPOINT_URL] -n [AUTOSCALING_GROUP_NAME] -all
+```
+
+
 ### Setting for bastion
 
 ```bash
