@@ -26,7 +26,9 @@ func CmdRemove(c *cli.Context) error {
 	if err != nil && resp == nil {
 		return cli.NewExitError(err.Error(), 1)
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusNotFound {
+		return cli.NewExitError("Not found.", 1)
+	} else if resp.StatusCode != http.StatusOK {
 		return cli.NewExitError("Failed!", 1)
 	}
 	fmt.Println("Success.")
