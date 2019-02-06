@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/codegangsta/martini-contrib/render"
@@ -10,6 +11,7 @@ import (
 	"github.com/heartbeatsjp/happo-agent/autoscaling"
 	"github.com/heartbeatsjp/happo-agent/halib"
 	"github.com/heartbeatsjp/happo-agent/util"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var (
@@ -271,5 +273,74 @@ func AutoScalingLeave(request halib.AutoScalingLeaveRequest, r render.Render) {
 	}
 
 	response.Status = "OK"
+	r.JSON(http.StatusOK, response)
+}
+
+// AutoScalingHealth checks auto scaling node is available
+func AutoScalingHealth(req *http.Request, params martini.Params, r render.Render) {
+	var response halib.AutoScalingHealthResponse
+	alias := params["alias"]
+	if alias == "" {
+		response.Status = "error"
+		response.Message = fmt.Sprintf("missing alias: %s", alias)
+		r.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	port := req.URL.Query().Get("port")
+	if port == "" {
+		port = fmt.Sprint(halib.DefaultAgentPort)
+	}
+
+	if _, err := strconv.Atoi(port); err != nil {
+		response.Status = "error"
+		response.Message = "port is must be specify integer"
+		r.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	ip, err := autoscaling.AliasToIP(alias)
+	if err != nil {
+		var errMsg string
+		if err == leveldb.ErrNotFound {
+			errMsg = fmt.Sprintf("alas not found: %s", alias)
+		} else {
+			errMsg = err.Error()
+		}
+		response.Status = "error"
+		response.Message = errMsg
+		r.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	if ip == "" {
+		response.Status = "OK"
+		response.Message = fmt.Sprintf("%s has not been assigned instance", alias)
+		r.JSON(http.StatusOK, response)
+		return
+	}
+
+	endpoint := "https://" + ip + ":" + port
+	res, err := util.RequestToCheckAvailableAPI(endpoint)
+	if err != nil {
+		response.Status = "error"
+		response.Message = err.Error()
+		response.IP = ip
+		r.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	if res.StatusCode != http.StatusOK {
+		response.Status = "error"
+		response.Message = fmt.Sprint("node returns status HTTP ", res.StatusCode)
+		response.IP = ip
+		r.JSON(http.StatusOK, response)
+		return
+	}
+
+	response.Status = "OK"
+	response.Message = ""
+	response.IP = ip
+
 	r.JSON(http.StatusOK, response)
 }

@@ -171,6 +171,13 @@ Subcommand for [API client mode](#api-client-mode)
 /path/to/happo-agent leave -n [NODE_ENDPOINT_URL]
 ```
 
+#### List aliases
+
+```
+/path/to/happo-agent list_aliases -b [BASTION_ENDPOINT_URL] -n [AUTOSCALING_GROUP_NAME] -all
+```
+
+
 ### Setting for bastion
 
 ```bash
@@ -568,6 +575,25 @@ Deregister node from autoscaling bastion. This handler is available only in agen
 wget -q --no-check-certificate -O -  https://127.0.0.1:6777/autoscaling/leave --post-data="{\"apikey\":\"\"}"
 {"status":"OK","message":""}
 ```
+
+### /autoscaling/health/:alias
+
+- Input format
+    - None
+- Input variables
+    - None
+- Return format
+    - JSON
+- Return variables
+    - status: result status
+    - message: message from agent (if error occurred)
+    - ip: private ip address by Amazon EC2
+
+```
+# wget -q --no-check-certificate -O -  https://127.0.0.1:6777/autoscaling/health/hb-autoscaling-app-1
+{"Status":"OK","message":"",ip:"192.0.2.1"}
+```
+
 
 ### /status
 
