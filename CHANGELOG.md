@@ -1,3 +1,14 @@
+### 2.1.0 (Wed Feb 6 15:46:23 2019 +0900)
+
+- Merge pull request #69 from shiimaxx/fix-http-transport-param (Tue Nov 20 18:33:07 2018 +0900) [f93653a](https://github.com/heartbeatsjp/happo-agent/commit/f93653a936b836b226eb262775b281e4ea3d53cc)
+- Merge pull request #70 from shiimaxx/fix-proxy-logging (Fri Nov 30 19:12:36 2018 +0900) [753bbd4](https://github.com/heartbeatsjp/happo-agent/commit/753bbd400a7940a572767a77b0e656d23343904d)
+- Merge pull request #71 from shiimaxx/skip-save-metrics (Fri Dec 21 13:14:30 2018 +0900) [ece7fa8](https://github.com/heartbeatsjp/happo-agent/commit/ece7fa8da3c9da1efef91bc46f2b2889b8d63ca4)
+- Merge pull request #72 from shiimaxx/autoscaling-health-api (Thu Jan 17 15:49:30 2019 +0900) [96f6aae](https://github.com/heartbeatsjp/happo-agent/commit/96f6aaeddcd058dadd306d2b8a71f7d05a5ca776)
+- Merge pull request #73 from heartbeatsjp/daemontest-cpu-usage-threshold (Thu Jan 17 16:02:29 2019 +0900) [94836d4](https://github.com/heartbeatsjp/happo-agent/commit/94836d4c126c4bde4c827272a9485089f9839fa1)
+- Merge pull request #74 from shiimaxx/fix-dep-status (Wed Jan 30 13:13:39 2019 +0900) [960cc73](https://github.com/heartbeatsjp/happo-agent/commit/960cc7397c7e1e7001a41aac03181e924fd1d19a)
+- Merge pull request #75 from shiimaxx/list_aliases-command (Fri Feb 1 16:49:01 2019 +0900) [c0d58d1](https://github.com/heartbeatsjp/happo-agent/commit/c0d58d1c767d8589a53b4c86f183331320a09221)
+- Merge pull request #76 from l3msh0/handle-404-in-removing-host (Wed Feb 6 15:46:23 2019 +0900) [b0a90e2](https://github.com/heartbeatsjp/happo-agent/commit/b0a90e2424ecd739a5aa999848dad95523dd1218)
+
 ### 2.0.0 (Tue Oct 23 18:41:19 2018 +0900)
 
 - Merge pull request #37 from heartbeatsjp/feature-support-aws-autoscaling (Wed Sep 19 18:02:14 2018 +0900) 858c6fd
