@@ -2,9 +2,8 @@ package autoscaling
 
 import (
 	"errors"
-	"strconv"
-
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -25,12 +24,17 @@ type AWSClient struct {
 }
 
 // NewAWSClient return AWSClient
-func NewAWSClient() *AWSClient {
+func NewAWSClient() (*AWSClient, error) {
 	sess := session.Must(session.NewSession())
-	return &AWSClient{
-		SvcAutoscaling: autoscaling.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
-		SvcEC2:         ec2.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
+	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
+	region, err := ec2Meta.Region()
+	if err != nil {
+		return nil, err
 	}
+	return &AWSClient{
+		SvcAutoscaling: autoscaling.New(sess, aws.NewConfig().WithRegion(region)),
+		SvcEC2:         ec2.New(sess, aws.NewConfig().WithRegion(region)),
+	}, nil
 }
 
 // EC2MetadataAPI interface of ec2metadata.EC2Metadata
@@ -47,13 +51,18 @@ type NodeAWSClient struct {
 }
 
 // NewNodeAWSClient return NodeAWSClient
-func NewNodeAWSClient() *NodeAWSClient {
+func NewNodeAWSClient() (*NodeAWSClient, error) {
 	sess := session.Must(session.NewSession())
-	return &NodeAWSClient{
-		SvcSSM:         ssm.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
-		SvcAutoScaling: autoscaling.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
-		SvcEC2Metadata: ec2metadata.New(session.Must(session.NewSession())),
+	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
+	region, err := ec2Meta.Region()
+	if err != nil {
+		return nil, err
 	}
+	return &NodeAWSClient{
+		SvcSSM:         ssm.New(sess, aws.NewConfig().WithRegion(region)),
+		SvcAutoScaling: autoscaling.New(sess, aws.NewConfig().WithRegion(region)),
+		SvcEC2Metadata: ec2Meta,
+	}, nil
 }
 
 func (client *AWSClient) describeAutoScalingInstances(autoScalingGroupName string) ([]*ec2.Instance, error) {
