@@ -17,6 +17,7 @@ import (
 	"github.com/heartbeatsjp/happo-agent/halib"
 )
 
+// ErrNotRunningEC2 represents error for not running within Amazon EC2 when daemon mode
 var ErrNotRunningEC2 = errors.New("not running within Amazon EC2")
 
 // AWSClient allows you to get the list of IP addresses of instanes of an Auto Scaling group
