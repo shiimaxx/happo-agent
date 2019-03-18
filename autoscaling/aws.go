@@ -17,6 +17,8 @@ import (
 	"github.com/heartbeatsjp/happo-agent/halib"
 )
 
+var ErrNotRunningEC2 = errors.New("not running within Amazon EC2")
+
 // AWSClient allows you to get the list of IP addresses of instanes of an Auto Scaling group
 type AWSClient struct {
 	SvcEC2         ec2iface.EC2API
@@ -27,6 +29,10 @@ type AWSClient struct {
 func NewAWSClient() (*AWSClient, error) {
 	sess := session.Must(session.NewSession())
 	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
+	if !ec2Meta.Available() {
+		return nil, ErrNotRunningEC2
+	}
+
 	region, err := ec2Meta.Region()
 	if err != nil {
 		return nil, err
@@ -54,6 +60,10 @@ type NodeAWSClient struct {
 func NewNodeAWSClient() (*NodeAWSClient, error) {
 	sess := session.Must(session.NewSession())
 	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
+	if !ec2Meta.Available() {
+		return nil, ErrNotRunningEC2
+	}
+
 	region, err := ec2Meta.Region()
 	if err != nil {
 		return nil, err

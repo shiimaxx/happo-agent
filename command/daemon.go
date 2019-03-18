@@ -130,9 +130,12 @@ func CmdDaemon(c *cli.Context) {
 	isAutoScalingNode := c.Bool("enable-autoscaling-node")
 	if isAutoScalingNode {
 		nodeClient, err := autoscaling.NewNodeAWSClient()
-		if err != nil {
+		if err == nil {
+			m.Map(nodeClient)
+		} else if err != autoscaling.ErrNotRunningEC2 {
 			log.Fatal("create aws client failed: ", err)
 		}
+
 		path := c.String("autoscaling-parameter-store-path")
 		if path != "" {
 			p, err := nodeClient.GetAutoScalingNodeConfigParameters(path)
@@ -175,7 +178,6 @@ func CmdDaemon(c *cli.Context) {
 			}
 			log.Info(fmt.Sprintf("join succeed"))
 		}()
-		m.Map(nodeClient)
 	}
 
 	model.SetProxyTimeout(c.Int64("proxy-timeout-seconds"))
@@ -190,10 +192,11 @@ func CmdDaemon(c *cli.Context) {
 	model.AutoScalingConfigFile = c.String("autoscaling-config")
 	if _, err := autoscaling.GetAutoScalingConfig(model.AutoScalingConfigFile); err == nil {
 		client, err := autoscaling.NewAWSClient()
-		if err != nil {
+		if err == nil {
+			m.Map(client)
+		} else if err != autoscaling.ErrNotRunningEC2 {
 			log.Fatal("create aws client failed: ", err)
 		}
-		m.Map(client)
 	}
 
 	model.ErrorLogIntervalSeconds = c.Int64("error-log-interval-seconds")
