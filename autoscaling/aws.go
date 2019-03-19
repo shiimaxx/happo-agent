@@ -26,7 +26,8 @@ type AWSClient struct {
 	SvcAutoscaling autoscalingiface.AutoScalingAPI
 }
 
-// NewAWSClient return AWSClient
+// NewAWSClient returns AWSClient when running within Amazon EC2.
+// If running in not Amazon EC2, returns ErrNotRunningEC2 as an error.
 func NewAWSClient() (*AWSClient, error) {
 	sess := session.Must(session.NewSession())
 	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
@@ -57,7 +58,8 @@ type NodeAWSClient struct {
 	SvcEC2Metadata EC2MetadataAPI
 }
 
-// NewNodeAWSClient return NodeAWSClient
+// NewNodeAWSClient returns NodeAWSClient when running within Amazon EC2.
+// If running in not Amazon EC2, returns ErrNotRunningEC2 as an error.
 func NewNodeAWSClient() (*NodeAWSClient, error) {
 	sess := session.Must(session.NewSession())
 	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
