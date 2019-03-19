@@ -132,7 +132,9 @@ func CmdDaemon(c *cli.Context) {
 		nodeClient, err := autoscaling.NewNodeAWSClient()
 		if err == nil {
 			m.Map(nodeClient)
-		} else if err != autoscaling.ErrNotRunningEC2 {
+		} else if err == autoscaling.ErrNotRunningEC2 {
+			log.Error("create aws client failed: ", err)
+		} else {
 			log.Fatal("create aws client failed: ", err)
 		}
 
@@ -194,7 +196,9 @@ func CmdDaemon(c *cli.Context) {
 		client, err := autoscaling.NewAWSClient()
 		if err == nil {
 			m.Map(client)
-		} else if err != autoscaling.ErrNotRunningEC2 {
+		} else if err == autoscaling.ErrNotRunningEC2 {
+			log.Error("create aws client failed: ", err)
+		} else {
 			log.Fatal("create aws client failed: ", err)
 		}
 	}
