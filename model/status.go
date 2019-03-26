@@ -92,14 +92,13 @@ func MemoryStatus(req *http.Request, r render.Render) {
 }
 
 // AutoScalingStatus implements /status/autoscaling endpoint
-func AutoScalingStatus(req *http.Request, r render.Render) {
+func AutoScalingStatus(req *http.Request, r render.Render, client *autoscaling.AWSClient) {
 	config, err := autoscaling.GetAutoScalingConfig(AutoScalingConfigFile)
 	if err != nil {
 		r.JSON(http.StatusInternalServerError, halib.AutoScalingStatus{})
 		return
 	}
 
-	client := autoscaling.NewAWSClient()
 	var status []halib.AutoScalingStatus
 	for _, a := range config.AutoScalings {
 		diff, err := autoscaling.CompareInstances(client, a.AutoScalingGroupName, a.HostPrefix)

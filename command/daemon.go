@@ -129,10 +129,18 @@ func CmdDaemon(c *cli.Context) {
 
 	isAutoScalingNode := c.Bool("enable-autoscaling-node")
 	if isAutoScalingNode {
-		client := autoscaling.NewNodeAWSClient()
+		nodeClient, err := autoscaling.NewNodeAWSClient()
+		if err == nil {
+			m.Map(nodeClient)
+		} else if err == autoscaling.ErrNotRunningEC2 {
+			log.Error("create aws client failed: ", err)
+		} else {
+			log.Fatal("create aws client failed: ", err)
+		}
+
 		path := c.String("autoscaling-parameter-store-path")
 		if path != "" {
-			p, err := client.GetAutoScalingNodeConfigParameters(path)
+			p, err := nodeClient.GetAutoScalingNodeConfigParameters(path)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -161,7 +169,7 @@ func CmdDaemon(c *cli.Context) {
 
 		go func() {
 			time.Sleep(time.Duration(autoScalingJoinWaitSeconds) * time.Second)
-			metricConfig, err := autoscaling.JoinAutoScalingGroup(client, autoScalingBastionEndpoint)
+			metricConfig, err := autoscaling.JoinAutoScalingGroup(nodeClient, autoScalingBastionEndpoint)
 			if err != nil {
 				log.Error(fmt.Sprintf("failed to join: %s", err.Error()))
 				return
@@ -184,6 +192,16 @@ func CmdDaemon(c *cli.Context) {
 	util.CommandTimeout = time.Duration(c.Int("command-timeout"))
 	model.MetricConfigFile = c.String("metric-config")
 	model.AutoScalingConfigFile = c.String("autoscaling-config")
+	if _, err := autoscaling.GetAutoScalingConfig(model.AutoScalingConfigFile); err == nil {
+		client, err := autoscaling.NewAWSClient()
+		if err == nil {
+			m.Map(client)
+		} else if err == autoscaling.ErrNotRunningEC2 {
+			log.Error("create aws client failed: ", err)
+		} else {
+			log.Fatal("create aws client failed: ", err)
+		}
+	}
 
 	model.ErrorLogIntervalSeconds = c.Int64("error-log-interval-seconds")
 	model.NagiosPluginPaths = c.String("nagios-plugin-paths")

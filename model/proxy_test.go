@@ -2,23 +2,21 @@ package model
 
 import (
 	"bytes"
+	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"strconv"
 	"testing"
 	"time"
 
-	"os"
-
-	"encoding/gob"
-
-	"encoding/json"
-
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/go-martini/martini"
+	"github.com/heartbeatsjp/happo-agent/autoscaling"
 	"github.com/heartbeatsjp/happo-agent/db"
 	"github.com/heartbeatsjp/happo-agent/halib"
 	"github.com/martini-contrib/binding"
@@ -166,6 +164,7 @@ func TestProxy1(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -210,6 +209,7 @@ func TestProxy2(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -260,6 +260,7 @@ func TestProxy3(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -304,6 +305,7 @@ func TestProxy4(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -356,6 +358,7 @@ func TestProxy5(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -403,6 +406,7 @@ func TestProxy6(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -450,6 +454,7 @@ func TestProxy7(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -497,6 +502,7 @@ func TestProxy8(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -544,6 +550,7 @@ func TestProxy9(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -583,6 +590,7 @@ func TestProxy10(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -626,6 +634,7 @@ func TestProxy11(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -669,6 +678,7 @@ func TestProxy12(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -712,6 +722,7 @@ func TestProxy13(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -783,6 +794,7 @@ func TestProxy14(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -854,6 +866,7 @@ func TestProxy15(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	alias := "dummy-prod-ag-dummy-prod-app-1"
 	port := 6777
@@ -906,6 +919,7 @@ func TestProxy16(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	//edge
 	ts := httptest.NewTLSServer(
@@ -951,6 +965,7 @@ func TestProxy17(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	requestJSON := fmt.Sprintf(`{
 		"proxy_hostport": ["%s:%d"],
@@ -981,6 +996,7 @@ func TestProxy18(t *testing.T) {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), Proxy)
+	m.Map(&autoscaling.AWSClient{})
 
 	alias := "dummy-prod-ag-dummy-prod-app-1"
 	port := 6777

@@ -201,7 +201,7 @@ func AutoScalingDelete(request halib.AutoScalingDeleteRequest, r render.Render) 
 }
 
 // AutoScalingRefresh refresh autoscaling
-func AutoScalingRefresh(request halib.AutoScalingRefreshRequest, r render.Render) {
+func AutoScalingRefresh(request halib.AutoScalingRefreshRequest, r render.Render, client *autoscaling.AWSClient) {
 	var response halib.AutoScalingRefreshResponse
 
 	autoScalingList, err := autoscaling.GetAutoScalingConfig(AutoScalingConfigFile)
@@ -240,7 +240,6 @@ func AutoScalingRefresh(request halib.AutoScalingRefreshRequest, r render.Render
 		return
 	}
 
-	client := autoscaling.NewAWSClient()
 	var errors []string
 	for _, a := range refreshAutoScalingGroups {
 		err = autoscaling.RefreshAutoScalingInstances(client, a.autoScalingGroupName, a.hostPrefix, a.autoScalingCount)
@@ -261,10 +260,9 @@ func AutoScalingRefresh(request halib.AutoScalingRefreshRequest, r render.Render
 
 // AutoScalingLeave deregister self node from autoscaling bastion.
 // this handler is available only in agent running with autoscaling node.
-func AutoScalingLeave(request halib.AutoScalingLeaveRequest, r render.Render) {
+func AutoScalingLeave(request halib.AutoScalingLeaveRequest, r render.Render, client *autoscaling.NodeAWSClient) {
 	var response halib.AutoScalingLeaveResponse
 
-	client := autoscaling.NewNodeAWSClient()
 	if err := autoscaling.LeaveAutoScalingGroup(client, AutoScalingBastionEndpoint); err != nil {
 		response.Status = "error"
 		response.Message = fmt.Sprintf("failed to leave: %s", err.Error())

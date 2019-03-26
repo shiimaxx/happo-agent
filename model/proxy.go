@@ -27,7 +27,10 @@ var (
 	tr          = http.DefaultTransport.(*http.Transport)
 	_httpClient = http.DefaultClient
 
-	refreshAutoScalingChan            = make(chan halib.AutoScalingConfigData)
+	refreshAutoScalingChan = make(chan struct {
+		config halib.AutoScalingConfigData
+		client autoscaling.AWSClient
+	})
 	refreshAutoScalingMutex           = sync.Mutex{}
 	lastRefreshAutoScaling            = make(map[string]int64)
 	refreshAutoScalingIntervalSeconds = int64(halib.DefaultRefreshAutoScalingIntervalSeconds)
@@ -43,20 +46,19 @@ func init() {
 			case a := <-refreshAutoScalingChan:
 				go func(autoScalingGroupName, hostPrefix string, autoScalingCount int) {
 					if isPermitRefreshAutoScaling(autoScalingGroupName) {
-						client := autoscaling.NewAWSClient()
-						if err := autoscaling.RefreshAutoScalingInstances(client, autoScalingGroupName, hostPrefix, autoScalingCount); err != nil {
+						if err := autoscaling.RefreshAutoScalingInstances(&a.client, autoScalingGroupName, hostPrefix, autoScalingCount); err != nil {
 							log := util.HappoAgentLogger()
 							log.Error(err.Error())
 						}
 					}
-				}(a.AutoScalingGroupName, a.HostPrefix, a.AutoScalingCount)
+				}(a.config.AutoScalingGroupName, a.config.HostPrefix, a.config.AutoScalingCount)
 			}
 		}
 	}()
 }
 
 // Proxy do http reqest to next happo-agent
-func Proxy(proxyRequest halib.ProxyRequest, r render.Render) (int, string) {
+func Proxy(proxyRequest halib.ProxyRequest, r render.Render, client *autoscaling.AWSClient) (int, string) {
 	var nextHostport string
 	var requestType string
 	var requestJSON []byte
@@ -84,22 +86,28 @@ func Proxy(proxyRequest halib.ProxyRequest, r render.Render) (int, string) {
 		}
 	}
 
-	a := getAutoScalingInfo(nextHost)
+	config := getAutoScalingInfo(nextHost)
 
 	var respCode int
 	var response string
-	if a.AutoScalingGroupName == "" {
+	if config.AutoScalingGroupName == "" {
 		respCode, response, err = postToAgent(nextHost, nextPort, requestType, requestJSON)
 		if err != nil {
 			response = makeMonitorResponse(halib.MonitorUnknown, err.Error())
 		}
 	} else {
-		respCode, response, err = postToAutoScalingAgent(nextHost, nextPort, requestType, requestJSON, a.AutoScalingGroupName)
+		respCode, response, err = postToAutoScalingAgent(nextHost, nextPort, requestType, requestJSON, config.AutoScalingGroupName)
 		if err != nil {
 			response = makeMonitorResponse(halib.MonitorUnknown, err.Error())
 		}
 		if requestType == "monitor" && respCode != http.StatusOK {
-			refreshAutoScalingChan <- a
+			refreshAutoScalingChan <- struct {
+				config halib.AutoScalingConfigData
+				client autoscaling.AWSClient
+			}{
+				config: config,
+				client: *client,
+			}
 		}
 	}
 

@@ -2,9 +2,8 @@ package autoscaling
 
 import (
 	"errors"
-	"strconv"
-
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -18,19 +17,32 @@ import (
 	"github.com/heartbeatsjp/happo-agent/halib"
 )
 
+// ErrNotRunningEC2 represents error for not running within Amazon EC2 when daemon mode
+var ErrNotRunningEC2 = errors.New("not running within Amazon EC2")
+
 // AWSClient allows you to get the list of IP addresses of instanes of an Auto Scaling group
 type AWSClient struct {
 	SvcEC2         ec2iface.EC2API
 	SvcAutoscaling autoscalingiface.AutoScalingAPI
 }
 
-// NewAWSClient return AWSClient
-func NewAWSClient() *AWSClient {
+// NewAWSClient returns AWSClient when running within Amazon EC2.
+// If running in not Amazon EC2, returns ErrNotRunningEC2 as an error.
+func NewAWSClient() (*AWSClient, error) {
 	sess := session.Must(session.NewSession())
-	return &AWSClient{
-		SvcAutoscaling: autoscaling.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
-		SvcEC2:         ec2.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
+	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
+	if !ec2Meta.Available() {
+		return nil, ErrNotRunningEC2
 	}
+
+	region, err := ec2Meta.Region()
+	if err != nil {
+		return nil, err
+	}
+	return &AWSClient{
+		SvcAutoscaling: autoscaling.New(sess, aws.NewConfig().WithRegion(region)),
+		SvcEC2:         ec2.New(sess, aws.NewConfig().WithRegion(region)),
+	}, nil
 }
 
 // EC2MetadataAPI interface of ec2metadata.EC2Metadata
@@ -46,14 +58,24 @@ type NodeAWSClient struct {
 	SvcEC2Metadata EC2MetadataAPI
 }
 
-// NewNodeAWSClient return NodeAWSClient
-func NewNodeAWSClient() *NodeAWSClient {
+// NewNodeAWSClient returns NodeAWSClient when running within Amazon EC2.
+// If running in not Amazon EC2, returns ErrNotRunningEC2 as an error.
+func NewNodeAWSClient() (*NodeAWSClient, error) {
 	sess := session.Must(session.NewSession())
-	return &NodeAWSClient{
-		SvcSSM:         ssm.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
-		SvcAutoScaling: autoscaling.New(sess, aws.NewConfig().WithRegion("ap-northeast-1")),
-		SvcEC2Metadata: ec2metadata.New(session.Must(session.NewSession())),
+	ec2Meta := ec2metadata.New(session.Must(session.NewSession()))
+	if !ec2Meta.Available() {
+		return nil, ErrNotRunningEC2
 	}
+
+	region, err := ec2Meta.Region()
+	if err != nil {
+		return nil, err
+	}
+	return &NodeAWSClient{
+		SvcSSM:         ssm.New(sess, aws.NewConfig().WithRegion(region)),
+		SvcAutoScaling: autoscaling.New(sess, aws.NewConfig().WithRegion(region)),
+		SvcEC2Metadata: ec2Meta,
+	}, nil
 }
 
 func (client *AWSClient) describeAutoScalingInstances(autoScalingGroupName string) ([]*ec2.Instance, error) {
