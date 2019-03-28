@@ -1,3 +1,7 @@
+### 2.1.1 (Tue Mar 26 17:10:48 2019 +0900)
+
+- Merge pull request #77 from shiimaxx/aws-region (Tue Mar 26 17:10:48 2019 +0900) [1d992d8](https://github.com/heartbeatsjp/happo-agent/commit/1d992d81a78cc36d3384a9b3b6dfcac835f46ec2)
+
 ### 2.1.0 (Wed Feb 6 15:46:23 2019 +0900)
 
 - Merge pull request #69 from shiimaxx/fix-http-transport-param (Tue Nov 20 18:33:07 2018 +0900) [f93653a](https://github.com/heartbeatsjp/happo-agent/commit/f93653a936b836b226eb262775b281e4ea3d53cc)
