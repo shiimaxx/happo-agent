@@ -11,8 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/net/netutil"
-
 	"github.com/client9/reopen"
 	"github.com/codegangsta/cli"
 	"github.com/codegangsta/martini-contrib/render"
@@ -25,6 +23,7 @@ import (
 	"github.com/heartbeatsjp/happo-agent/model"
 	"github.com/heartbeatsjp/happo-agent/util"
 	"github.com/martini-contrib/binding"
+	"golang.org/x/net/netutil"
 )
 
 // --- Struct
@@ -96,6 +95,12 @@ func CmdDaemon(c *cli.Context) {
 			DisableProdCheck: true,
 		}))
 
+	// AWS clients that behave for dummy when the daemon is not running within Amazon EC2.
+	// When the daemon is running within AWS, overwrite with actual clients created by autoscaling.New*Client().
+	// Finally, clients are injecting to the handler in both cases.
+	var awsClient *autoscaling.AWSClient
+	var nodeAWSClient *autoscaling.NodeAWSClient
+
 	enableRequestStatusMiddlware := c.Bool("enable-requeststatus-middleware")
 	if enableRequestStatusMiddlware {
 		m.Use(util.MartiniRequestStatus())
@@ -129,18 +134,19 @@ func CmdDaemon(c *cli.Context) {
 
 	isAutoScalingNode := c.Bool("enable-autoscaling-node")
 	if isAutoScalingNode {
-		nodeClient, err := autoscaling.NewNodeAWSClient()
+		client, err := autoscaling.NewNodeAWSClient()
 		if err == nil {
-			m.Map(nodeClient)
+			nodeAWSClient = client
 		} else if err == autoscaling.ErrNotRunningEC2 {
 			log.Error("create aws client failed: ", err)
 		} else {
 			log.Fatal("create aws client failed: ", err)
 		}
+		m.Map(nodeAWSClient)
 
 		path := c.String("autoscaling-parameter-store-path")
 		if path != "" {
-			p, err := nodeClient.GetAutoScalingNodeConfigParameters(path)
+			p, err := client.GetAutoScalingNodeConfigParameters(path)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -169,7 +175,7 @@ func CmdDaemon(c *cli.Context) {
 
 		go func() {
 			time.Sleep(time.Duration(autoScalingJoinWaitSeconds) * time.Second)
-			metricConfig, err := autoscaling.JoinAutoScalingGroup(nodeClient, autoScalingBastionEndpoint)
+			metricConfig, err := autoscaling.JoinAutoScalingGroup(client, autoScalingBastionEndpoint)
 			if err != nil {
 				log.Error(fmt.Sprintf("failed to join: %s", err.Error()))
 				return
@@ -195,13 +201,14 @@ func CmdDaemon(c *cli.Context) {
 	if _, err := autoscaling.GetAutoScalingConfig(model.AutoScalingConfigFile); err == nil {
 		client, err := autoscaling.NewAWSClient()
 		if err == nil {
-			m.Map(client)
+			awsClient = client
 		} else if err == autoscaling.ErrNotRunningEC2 {
 			log.Error("create aws client failed: ", err)
 		} else {
 			log.Fatal("create aws client failed: ", err)
 		}
 	}
+	m.Map(awsClient)
 
 	model.ErrorLogIntervalSeconds = c.Int64("error-log-interval-seconds")
 	model.NagiosPluginPaths = c.String("nagios-plugin-paths")
