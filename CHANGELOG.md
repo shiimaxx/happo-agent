@@ -1,3 +1,7 @@
+### 2.1.2 (Tue Apr 2 11:01:54 2019 +0900)
+
+- Merge pull request #79 from shiimaxx/fix-78 (Tue Apr 2 11:01:54 2019 +0900) [bb7ecef](https://github.com/heartbeatsjp/happo-agent/commit/bb7ecef3bc429e09c86e239eb15e4fb922e2b864)
+
 ### 2.1.1 (Tue Mar 26 17:10:48 2019 +0900)
 
 - Merge pull request #77 from shiimaxx/aws-region (Tue Mar 26 17:10:48 2019 +0900) [1d992d8](https://github.com/heartbeatsjp/happo-agent/commit/1d992d81a78cc36d3384a9b3b6dfcac835f46ec2)
