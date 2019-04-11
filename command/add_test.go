@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"flag"
@@ -101,7 +102,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 		isNormalTest         bool
 	}{
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \ 
+			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \
 							--autoscaling_group_name hb-autoscaling --autoscaling_count 10 --host_prefix app`,
 			endpoint:             ts.URL,
 			group:                "HB_TEST",
@@ -113,7 +114,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 			isNormalTest:         true,
 		},
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url> --proxy 192.0.2.1 \ 
+			name: `happo-agent add_ag --endpoint <endpoint url> --proxy 192.0.2.1 \
 							--autoscaling_group_name hb-autoscaling --autoscaling_count 10 --host_prefix app`,
 			endpoint:             ts.URL,
 			group:                "",
@@ -125,7 +126,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 			isNormalTest:         false,
 		},
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url>  --group_name HB_TEST \ 
+			name: `happo-agent add_ag --endpoint <endpoint url>  --group_name HB_TEST \
 							--autoscaling_group_name hb-autoscaling --autoscaling_count 10 --host_prefix app`,
 			endpoint:             ts.URL,
 			group:                "HB_TEST",
@@ -137,7 +138,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 			isNormalTest:         false,
 		},
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \ 
+			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \
 							--autoscaling_count 10 --host_prefix app`,
 			endpoint:             ts.URL,
 			group:                "HB_TEST",
@@ -149,7 +150,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 			isNormalTest:         false,
 		},
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \ 
+			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \
 							--autoscaling_group_name hb-autoscaling --host_prefix app`,
 			endpoint:             ts.URL,
 			group:                "HB_TEST",
@@ -161,7 +162,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 			isNormalTest:         false,
 		},
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \ 
+			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \
 							--autoscaling_group_name hb-autoscaling --autoscaling_count -5 --host_prefix app`,
 			endpoint:             ts.URL,
 			group:                "HB_TEST",
@@ -173,7 +174,7 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 			isNormalTest:         false,
 		},
 		{
-			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \ 
+			name: `happo-agent add_ag --endpoint <endpoint url> --group_name HB_TEST --proxy 192.0.2.1 \
 							--autoscaling_group_name hb-autoscaling --autoscaling_count 10`,
 			endpoint:             ts.URL,
 			group:                "HB_TEST",
@@ -206,6 +207,37 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 				assert.NotNil(t, err)
 				assert.Equal(t, c.expected, err.Error())
 			}
+		})
+	}
+}
+
+func TestCmdAddError(t *testing.T) {
+	statuses := []int{
+		http.StatusBadRequest,
+		http.StatusInternalServerError,
+	}
+
+	for _, status := range statuses {
+		t.Run("status_"+strconv.Itoa(status), func(t *testing.T) {
+			ts := httptest.NewServer(
+				http.HandlerFunc(
+					func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(status)
+						w.Write([]byte("dummy message"))
+					}))
+			defer ts.Close()
+
+			app := cli.NewApp()
+			set := flag.NewFlagSet("test", 0)
+			set.String("endpoint", ts.URL, "")
+			set.String("group_name", "TEST", "")
+			set.String("ip", "192.168.0.1", "")
+			mockCLI := cli.NewContext(app, set, nil)
+			mockCLI.Command.Name = "add"
+
+			err := CmdAdd(mockCLI)
+			assert.NotNil(t, err)
+			assert.EqualError(t, err, fmt.Sprintf("Failed! [%d] dummy message", status))
 		})
 	}
 }
