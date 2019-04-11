@@ -38,7 +38,7 @@ func TestCmdRemove(t *testing.T) {
 			resStatusCode: http.StatusInternalServerError,
 			resBody:       `{"status":"NG","message":"some error has occured!!"}`,
 			isNormalTest:  false,
-			expected:      "Failed!",
+			expected:      "Failed! [500] {\"status\":\"NG\",\"message\":\"some error has occured!!\"}\n",
 		},
 	}
 
