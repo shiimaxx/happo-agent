@@ -1,13 +1,11 @@
 package command
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/codegangsta/cli"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,7 +36,7 @@ func TestCmdRemove(t *testing.T) {
 			resStatusCode: http.StatusInternalServerError,
 			resBody:       `{"status":"NG","message":"some error has occured!!"}`,
 			isNormalTest:  false,
-			expected:      "Failed! [500] {\"status\":\"NG\",\"message\":\"some error has occured!!\"}\n",
+			expected:      `Failed! [500] {"status":"NG","message":"some error has occured!!"}` + "\n",
 		},
 	}
 
@@ -54,14 +52,7 @@ func TestCmdRemove(t *testing.T) {
 					}))
 			defer ts.Close()
 
-			app := cli.NewApp()
-			set := flag.NewFlagSet("test", 0)
-			set.String("endpoint", ts.URL, "")
-			set.String("group_name", dummyGroupName, "")
-			set.String("ip", dummyIP, "")
-			mockCLI := cli.NewContext(app, set, nil)
-			mockCLI.Command.Name = "remove"
-
+			mockCLI := buildBasicContext("remove", ts.URL, dummyGroupName, dummyIP)
 			if err := CmdRemove(mockCLI); err != nil {
 				if c.isNormalTest {
 					assert.Nil(t, err)
