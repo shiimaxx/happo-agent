@@ -34,6 +34,7 @@ func CmdIsAdded(c *cli.Context) error {
 		return nil
 	} else {
 		body, err := ioutil.ReadAll(resp.Body)
+		// exit with code 2 as older version did so
 		if err != nil {
 			return cli.NewExitError(fmt.Sprintf("Failed! [%d] (response body cannot be read)", resp.StatusCode), 2)
 		}

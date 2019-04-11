@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/codegangsta/cli"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,9 +55,10 @@ func TestCmdIsAddedError(t *testing.T) {
 			defer ts.Close()
 
 			mockCLI := buildBasicContext("is_added", ts.URL, "TEST", "192.168.0.1")
-			err := CmdIsAdded(mockCLI)
+			err := CmdIsAdded(mockCLI).(*cli.ExitError)
 			assert.NotNil(t, err)
 			assert.EqualError(t, err, fmt.Sprintf("Failed! [%d] dummy message", status))
+			assert.Equal(t, 2, err.ExitCode())
 		})
 	}
 }
