@@ -3,6 +3,7 @@ package command
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/codegangsta/cli"
@@ -31,6 +32,12 @@ func CmdIsAdded(c *cli.Context) error {
 	} else if resp.StatusCode == http.StatusFound {
 		fmt.Println("Found.")
 		return nil
+	} else {
+		body, err := ioutil.ReadAll(resp.Body)
+		// exit with code 2 as older version did so
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("Failed! [%d] (response body cannot be read)", resp.StatusCode), 2)
+		}
+		return cli.NewExitError(fmt.Sprintf("Failed! [%d] %s", resp.StatusCode, body), 2)
 	}
-	return cli.NewExitError("Unknown Status", 2)
 }

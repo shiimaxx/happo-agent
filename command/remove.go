@@ -3,6 +3,7 @@ package command
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/codegangsta/cli"
@@ -29,7 +30,11 @@ func CmdRemove(c *cli.Context) error {
 	if resp.StatusCode == http.StatusNotFound {
 		return cli.NewExitError("Not found.", 1)
 	} else if resp.StatusCode != http.StatusOK {
-		return cli.NewExitError("Failed!", 1)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			cli.NewExitError(fmt.Sprintf("Failed! [%d] (response body cannot be read)", resp.StatusCode), 1)
+		}
+		return cli.NewExitError(fmt.Sprintf("Failed! [%d] %s", resp.StatusCode, body), 1)
 	}
 	fmt.Println("Success.")
 	return nil

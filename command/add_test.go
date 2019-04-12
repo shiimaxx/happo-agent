@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"flag"
@@ -63,14 +64,7 @@ func TestCmdAdd(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			app := cli.NewApp()
-			set := flag.NewFlagSet("test", 0)
-			set.String("endpoint", c.endpoint, "")
-			set.String("group_name", c.group, "")
-			set.String("ip", c.ip, "")
-			mockCLI := cli.NewContext(app, set, nil)
-			mockCLI.Command.Name = "add"
-
+			mockCLI := buildBasicContext("add", c.endpoint, c.group, c.ip)
 			if err := CmdAdd(mockCLI); err != nil {
 				if c.isNormalTest {
 					assert.Nil(t, err)
@@ -206,6 +200,30 @@ func TestCmdAdd_AutoScaling(t *testing.T) {
 				assert.NotNil(t, err)
 				assert.Equal(t, c.expected, err.Error())
 			}
+		})
+	}
+}
+
+func TestCmdAddError(t *testing.T) {
+	statuses := []int{
+		http.StatusBadRequest,
+		http.StatusInternalServerError,
+	}
+
+	for _, status := range statuses {
+		t.Run("status_"+strconv.Itoa(status), func(t *testing.T) {
+			ts := httptest.NewServer(
+				http.HandlerFunc(
+					func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(status)
+						w.Write([]byte("dummy message"))
+					}))
+			defer ts.Close()
+
+			mockCLI := buildBasicContext("add", ts.URL, "TEST", "192.168.0.1")
+			err := CmdAdd(mockCLI)
+			assert.NotNil(t, err)
+			assert.EqualError(t, err, fmt.Sprintf("Failed! [%d] dummy message", status))
 		})
 	}
 }
