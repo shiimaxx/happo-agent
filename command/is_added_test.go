@@ -62,3 +62,36 @@ func TestCmdIsAddedError(t *testing.T) {
 		})
 	}
 }
+
+func TestCmdIsAddedValidation(t *testing.T) {
+	cases := []struct {
+		caseName    string
+		group       string
+		ip          string
+		expectedMsg string
+	}{
+		{
+			caseName:    "blank group",
+			group:       "",
+			ip:          "192.168.0.1",
+			expectedMsg: "group_name is null",
+		},
+		{
+			caseName:    "blank ip",
+			group:       "TEST",
+			ip:          "",
+			expectedMsg: "ip is null",
+		},
+	}
+
+	dummyEndpoint := "http://localhost:6776"
+	for _, c := range cases {
+		t.Run(c.caseName, func(t *testing.T) {
+			mockCLI := buildBasicContext("is_added", dummyEndpoint, c.group, c.ip)
+			err := CmdIsAdded(mockCLI).(*cli.ExitError)
+			assert.NotNil(t, err)
+			assert.Equal(t, 1, err.ExitCode())
+			assert.EqualError(t, err, c.expectedMsg)
+		})
+	}
+}
