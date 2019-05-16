@@ -243,7 +243,10 @@ func ParseMetricData(rawMetricdata string) (map[string]float64, int64, error) {
 	for _, line := range strings.Split(rawMetricdata, "\n") {
 		items := strings.Split(line, "\t")
 		if len(items) != 3 {
-			continue
+			items = strings.Split(line, " ")
+			if len(items) != 3 {
+				continue
+			}
 		}
 		value, err := strconv.ParseFloat(items[1], 64)
 		if err != nil {
