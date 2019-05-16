@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -61,6 +62,13 @@ func ExecCommand(command string, option string) (int, string, string, error) {
 		Cmd:       exec.Command("/bin/sh", "-c", commandWithOptions),
 		Duration:  commandTimeout * time.Second,
 		KillAfter: halib.CommandKillAfterSeconds * time.Second,
+	}
+	if runtime.GOOS == "windows" {
+		tio = &timeout.Timeout{
+			Cmd:       exec.Command("powershell.exe", commandWithOptions),
+			Duration:  commandTimeout * time.Second,
+			KillAfter: halib.CommandKillAfterSeconds * time.Second,
+		}
 	}
 	exitStatus, stdout, stderr, err := tio.Run()
 
