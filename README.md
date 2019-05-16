@@ -730,6 +730,43 @@ $ wget -q --no-check-certificate -O - https://127.0.0.1:6777/machine-state/s-149
 
 [syndtr/goleveldb: LevelDB key/value database in Go\.](https://github.com/syndtr/goleveldb)
 
+## Experimental: Windows Support
+
+Supported API
+
+```
+/
+/proxy
+/monitor
+/metric
+/metric/append
+/metric/config/update
+/metric/status
+/status
+/status/memory
+```
+
+ToDO ( PR Welcome :relaxed: )
+
+- [ ] Register as Service
+
+### Example
+
+Use with sensu-plugins-windows is very convenient.
+https://github.com/sensu-plugins/sensu-plugins-windows
+
+In this example, use sensu-plugins-windows(powershell)
+
+1. clone https://github.com/sensu-plugins/sensu-plugins-windows
+    - In this example, clone to `Z:\sensu-plugins-windows`
+2. Do `Set-ExecutionPolicy RemoteSigned` in Administrative PowerShell (Run as Administrator)
+3. Run `happo-agent.exe` in `cmd.exe`
+    - options `--nagios-plugin-paths` and `--sensu-plugin-paths` are required.
+
+    ```
+    happo-agent.exe daemon -A 0.0.0.0/0 -B happo-agent.pub -R happo-agent.key -M metrics.yaml --nagios-plugin-paths=Z:\sensu-plugins-windows\bin\powershell --sensu-plugin-paths=Z:\sensu-plugins-windows\bin\powershell
+    ```
+
 ## Contribution
 
 1. Fork ([http://github.com/heartbeatsjp/happo-agent/fork](http://github.com/heartbeatsjp/happo-agent/fork))

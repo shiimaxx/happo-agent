@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/pprof"
 	"syscall"
 	"time"
@@ -215,31 +216,37 @@ func CmdDaemon(c *cli.Context) {
 	collect.SensuPluginPaths = c.String("sensu-plugin-paths")
 
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), model.Proxy)
-	m.Post("/inventory", binding.Json(halib.InventoryRequest{}), model.Inventory)
+	if runtime.GOOS != "windows" {
+		m.Post("/inventory", binding.Json(halib.InventoryRequest{}), model.Inventory)
+	}
 	m.Post("/monitor", binding.Json(halib.MonitorRequest{}), model.Monitor)
 	m.Post("/metric", binding.Json(halib.MetricRequest{}), model.Metric)
 	m.Post("/metric/append", binding.Json(halib.MetricAppendRequest{}), model.MetricAppend)
 	m.Post("/metric/config/update", binding.Json(halib.MetricConfigUpdateRequest{}), model.MetricConfigUpdate)
-	m.Post("/autoscaling/refresh", binding.Json(halib.AutoScalingRefreshRequest{}), model.AutoScalingRefresh)
-	m.Post("/autoscaling/delete", binding.Json(halib.AutoScalingDeleteRequest{}), model.AutoScalingDelete)
-	m.Post("/autoscaling/instance/register", binding.Json(halib.AutoScalingInstanceRegisterRequest{}), model.AutoScalingInstanceRegister)
-	m.Post("/autoscaling/instance/deregister", binding.Json(halib.AutoScalingInstanceDeregisterRequest{}), model.AutoScalingInstanceDeregister)
-	m.Post("/autoscaling/config/update", binding.Json(halib.AutoScalingConfigUpdateRequest{}), model.AutoScalingConfigUpdate)
-	if isAutoScalingNode {
-		m.Post("/autoscaling/leave", binding.Json(halib.AutoScalingLeaveRequest{}), model.AutoScalingLeave)
+	if runtime.GOOS != "windows" {
+		m.Post("/autoscaling/refresh", binding.Json(halib.AutoScalingRefreshRequest{}), model.AutoScalingRefresh)
+		m.Post("/autoscaling/delete", binding.Json(halib.AutoScalingDeleteRequest{}), model.AutoScalingDelete)
+		m.Post("/autoscaling/instance/register", binding.Json(halib.AutoScalingInstanceRegisterRequest{}), model.AutoScalingInstanceRegister)
+		m.Post("/autoscaling/instance/deregister", binding.Json(halib.AutoScalingInstanceDeregisterRequest{}), model.AutoScalingInstanceDeregister)
+		m.Post("/autoscaling/config/update", binding.Json(halib.AutoScalingConfigUpdateRequest{}), model.AutoScalingConfigUpdate)
+		if isAutoScalingNode {
+			m.Post("/autoscaling/leave", binding.Json(halib.AutoScalingLeaveRequest{}), model.AutoScalingLeave)
+		}
+		m.Get("/autoscaling", model.AutoScaling)
+		m.Get("/autoscaling/resolve/:alias", model.AutoScalingResolve)
+		m.Get("/autoscaling/health/:alias", model.AutoScalingHealth)
 	}
-	m.Get("/autoscaling", model.AutoScaling)
-	m.Get("/autoscaling/resolve/:alias", model.AutoScalingResolve)
-	m.Get("/autoscaling/health/:alias", model.AutoScalingHealth)
 	m.Get("/metric/status", model.MetricDataBufferStatus)
 	m.Get("/status", model.Status)
 	m.Get("/status/memory", model.MemoryStatus)
-	m.Get("/status/autoscaling", model.AutoScalingStatus)
-	if enableRequestStatusMiddlware {
-		m.Get("/status/request", model.RequestStatus)
+	if runtime.GOOS != "windows" {
+		m.Get("/status/autoscaling", model.AutoScalingStatus)
+		if enableRequestStatusMiddlware {
+			m.Get("/status/request", model.RequestStatus)
+		}
+		m.Get("/machine-state", model.ListMachieState)
+		m.Get("/machine-state/:key", model.GetMachineState)
 	}
-	m.Get("/machine-state", model.ListMachieState)
-	m.Get("/machine-state/:key", model.GetMachineState)
 
 	// Listener
 	var lis daemonListener
