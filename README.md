@@ -746,26 +746,56 @@ Supported API
 /status/memory
 ```
 
-ToDO ( PR Welcome :relaxed: )
+### Note1: Windows' Service Management
 
-- [ ] Register as Service
+Use NSSM to handle happo-agent as Windows' Service
 
-### Example
+NSSM - the Non-Sucking Service Manager https://nssm.cc/
+
+In below example, use NSSM.
+
+1. Download NSSM binary from https://nssm.cc/download
+2. Extract ZIP and put `nssm.exe` to `C:\happo-agent`
+    - `C:\happo-agent\nssm.exe`
+
+### Note2: Monitoring / Metrics Plugins
 
 Use with sensu-plugins-windows is very convenient.
 https://github.com/sensu-plugins/sensu-plugins-windows
 
-In this example, use sensu-plugins-windows(powershell)
+In below example, use sensu-plugins-windows(powershell)
 
-1. clone https://github.com/sensu-plugins/sensu-plugins-windows
-    - In this example, clone to `Z:\sensu-plugins-windows`
-2. Do `Set-ExecutionPolicy RemoteSigned` in Administrative PowerShell (Run as Administrator)
-3. Run `happo-agent.exe` in `cmd.exe`
-    - options `--nagios-plugin-paths` and `--sensu-plugin-paths` are required.
+1. Clone or Download https://github.com/sensu-plugins/sensu-plugins-windows
+    - In below example, clone to `C:\happo-agent\sensu-plugins-windows`
+2. Do `Set-ExecutionPolicy RemoteSigned` in Administrative PowerShell
+    1. Find `Windows PowerShell` in Start Menu
+    2. Right Click => Run as Administrator
+    3. `Set-ExecutionPolicy RemoteSigned` and Enter
 
-    ```
-    happo-agent.exe daemon -A 0.0.0.0/0 -B happo-agent.pub -R happo-agent.key -M metrics.yaml --nagios-plugin-paths=Z:\sensu-plugins-windows\bin\powershell --sensu-plugin-paths=Z:\sensu-plugins-windows\bin\powershell
-    ```
+### Example: happo-agent on Windows
+
+1. Download happo-agent release binary for Windows from GitHub
+    - https://github.com/heartbeatsjp/happo-agent/releases
+    - Save as `C:\happo-agent\happo-agent.exe`
+2. Install NSSM and sensu-plugins-windows
+    - see above
+3. Put required files(Can generate on another host)
+    - Public Key : In this example, use `C:\happo-agent/etc/happo-agent.pub`
+    - Private Key : In this example, use `C:\happo-agent/etc/happo-agent.key`
+    - Metric Config  : In this example, use `C:\happo-agent/etc/metrics.yaml`
+3. Install happo-agent as Windows' Service on administrative `cmd.exe`
+    1. Find `cmd.exe` in Start Menu
+    2. Right Click => Run as Administrator
+    3. Install
+
+        ```
+        cd c:\happo-agent
+        nssm.exe install happo-agent C:\happo-agent\happo-agent.exe daemon
+        nssm.exe set happo-agent AppEnvironmentExtra PATH=%PATH%;C:\happo-agent;C:\happo-agent\sensu-plugins-windows\bin\powershell,HAPPO_AGENT_ALLOWED_HOSTS=0.0.0.0/0 HAPPO_AGENT_PUBLIC_KEY=C:\happo-agent\etc\happo-agent.pub HAPPO_AGENT_PRIVATE_KEY=C:\happo-agent\etc\happo-agent.key HAPPO_AGENT_METRIC_CONFIG=C:\happo-agent\etc\metrics.yaml HAPPO_AGENT_NAGIOS_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell HAPPO_AGENT_SENSU_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell
+        nssm.exe set happo-agent AppStdout C:\happo-agent\happo-agent.out
+        nssm.exe set happo-agent AppStderr C:\happo-agent\happo-agent.out
+        nssm.exe start happo-agent
+        ```
 
 ## Contribution
 
