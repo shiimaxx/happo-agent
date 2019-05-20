@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -42,7 +43,7 @@ func init() {
 			select {
 			case <-saveStateChan:
 				go func() {
-					if isPermitSaveState() {
+					if isPermitSaveState() && runtime.GOOS != "windows" {
 						err := saveMachineState()
 						if err != nil {
 							log := util.HappoAgentLogger()

@@ -35,7 +35,7 @@ build:
             GODIRECTORIES=". $(find . -type f -name '*.go' | grep -vE '\./(.git|.wercker|vendor)' | grep './.*/.*' | sed 's@[^/]*.go@...@' | sort | uniq | xargs echo)"
             go test ${GODIRECTORIES:?}
     - tcnksm/gox:
-        os: "linux"
+        os: "linux windows"
         arch: "amd64"
         ldflags: "-X main.Version=$(git describe --tags)"
     - script: 
