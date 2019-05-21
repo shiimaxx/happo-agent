@@ -797,6 +797,24 @@ In below example, use sensu-plugins-windows(powershell)
         nssm.exe start happo-agent
         ```
 
+#### Note : When you use `happo-agent.exe` in production
+
+When you use `happo-agent.exe` in production, below environments are useful.
+
+```
+MARTINI_ENV="production"
+HAPPO_AGENT_LOG_LEVEL="warn"
+```
+
+`nssm.exe set happo-agent AppEnvironmentExtra ...` overwrites every time.
+so if you want to ADD `MARTINI_ENV="production"` and `HAPPO_AGENT_LOG_LEVEL="warn"` to above installation,
+do below.
+
+```
+nssm.exe set happo-agent AppEnvironmentExtra PATH=%PATH%;C:\happo-agent;C:\happo-agent\sensu-plugins-windows\bin\powershell,HAPPO_AGENT_ALLOWED_HOSTS=0.0.0.0/0 HAPPO_AGENT_PUBLIC_KEY=C:\happo-agent\etc\happo-agent.pub HAPPO_AGENT_PRIVATE_KEY=C:\happo-agent\etc\happo-agent.key HAPPO_AGENT_METRIC_CONFIG=C:\happo-agent\etc\metrics.yaml HAPPO_AGENT_NAGIOS_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell HAPPO_AGENT_SENSU_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell MARTINI_ENV="production" HAPPO_AGENT_LOG_LEVEL="warn"
+nssm.exe restart happo-agent
+```
+
 ## Contribution
 
 1. Fork ([http://github.com/heartbeatsjp/happo-agent/fork](http://github.com/heartbeatsjp/happo-agent/fork))
