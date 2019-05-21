@@ -1,3 +1,10 @@
+### 3.0.0 (Tue May 21 15:15:23 2019 +0900)
+
+- Merge pull request #80 from l3msh0/handle-server-error (Fri Apr 12 09:38:04 2019 +0900) c008887
+- Merge pull request #81 from l3msh0/fix-client-side-validation (Mon Apr 15 12:15:16 2019 +0900) 32ea51b
+- Merge pull request #82 from heartbeatsjp/partly-support-windows (Mon May 20 16:17:17 2019 +0900) 65595e3
+- Merge pull request #83 from heartbeatsjp/add-readme-about-windows-env (Tue May 21 15:15:23 2019 +0900) 8495fd7
+
 ### 2.1.2 (Tue Apr 2 11:01:54 2019 +0900)
 
 - Merge pull request #79 from shiimaxx/fix-78 (Tue Apr 2 11:01:54 2019 +0900) [bb7ecef](https://github.com/heartbeatsjp/happo-agent/commit/bb7ecef3bc429e09c86e239eb15e4fb922e2b864)
