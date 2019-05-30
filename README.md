@@ -737,6 +737,7 @@ Supported API
 ```
 /
 /proxy
+/inventory
 /monitor
 /metric
 /metric/append
