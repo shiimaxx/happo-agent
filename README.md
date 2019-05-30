@@ -737,6 +737,7 @@ Supported API
 ```
 /
 /proxy
+/inventory
 /monitor
 /metric
 /metric/append
@@ -791,7 +792,7 @@ In below example, use sensu-plugins-windows(powershell)
         ```
         cd c:\happo-agent
         nssm.exe install happo-agent C:\happo-agent\happo-agent.exe daemon
-        nssm.exe set happo-agent AppEnvironmentExtra PATH=%PATH%;C:\happo-agent;C:\happo-agent\sensu-plugins-windows\bin\powershell,HAPPO_AGENT_ALLOWED_HOSTS=0.0.0.0/0 HAPPO_AGENT_PUBLIC_KEY=C:\happo-agent\etc\happo-agent.pub HAPPO_AGENT_PRIVATE_KEY=C:\happo-agent\etc\happo-agent.key HAPPO_AGENT_METRIC_CONFIG=C:\happo-agent\etc\metrics.yaml HAPPO_AGENT_NAGIOS_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell HAPPO_AGENT_SENSU_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell
+        nssm.exe set happo-agent AppEnvironmentExtra PATH="%PATH%;C:\happo-agent;C:\happo-agent\sensu-plugins-windows\bin\powershell" HAPPO_AGENT_ALLOWED_HOSTS=0.0.0.0/0 HAPPO_AGENT_PUBLIC_KEY=C:\happo-agent\etc\happo-agent.pub HAPPO_AGENT_PRIVATE_KEY=C:\happo-agent\etc\happo-agent.key HAPPO_AGENT_METRIC_CONFIG=C:\happo-agent\etc\metrics.yaml HAPPO_AGENT_NAGIOS_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell HAPPO_AGENT_SENSU_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell
         nssm.exe set happo-agent AppStdout C:\happo-agent\happo-agent.out
         nssm.exe set happo-agent AppStderr C:\happo-agent\happo-agent.out
         nssm.exe start happo-agent
@@ -811,7 +812,7 @@ so if you want to ADD `MARTINI_ENV="production"` and `HAPPO_AGENT_LOG_LEVEL="war
 do below.
 
 ```
-nssm.exe set happo-agent AppEnvironmentExtra PATH=%PATH%;C:\happo-agent;C:\happo-agent\sensu-plugins-windows\bin\powershell,HAPPO_AGENT_ALLOWED_HOSTS=0.0.0.0/0 HAPPO_AGENT_PUBLIC_KEY=C:\happo-agent\etc\happo-agent.pub HAPPO_AGENT_PRIVATE_KEY=C:\happo-agent\etc\happo-agent.key HAPPO_AGENT_METRIC_CONFIG=C:\happo-agent\etc\metrics.yaml HAPPO_AGENT_NAGIOS_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell HAPPO_AGENT_SENSU_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell MARTINI_ENV="production" HAPPO_AGENT_LOG_LEVEL="warn"
+nssm.exe set happo-agent AppEnvironmentExtra PATH="%PATH%;C:\happo-agent;C:\happo-agent\sensu-plugins-windows\bin\powershell" HAPPO_AGENT_ALLOWED_HOSTS=0.0.0.0/0 HAPPO_AGENT_PUBLIC_KEY=C:\happo-agent\etc\happo-agent.pub HAPPO_AGENT_PRIVATE_KEY=C:\happo-agent\etc\happo-agent.key HAPPO_AGENT_METRIC_CONFIG=C:\happo-agent\etc\metrics.yaml HAPPO_AGENT_NAGIOS_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell HAPPO_AGENT_SENSU_PLUGIN_PATHS=C:\happo-agent\sensu-plugins-windows\bin\powershell MARTINI_ENV="production" HAPPO_AGENT_LOG_LEVEL="warn"
 nssm.exe restart happo-agent
 ```
 

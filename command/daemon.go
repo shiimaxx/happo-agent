@@ -216,9 +216,7 @@ func CmdDaemon(c *cli.Context) {
 	collect.SensuPluginPaths = c.String("sensu-plugin-paths")
 
 	m.Post("/proxy", binding.Json(halib.ProxyRequest{}), model.Proxy)
-	if runtime.GOOS != "windows" {
-		m.Post("/inventory", binding.Json(halib.InventoryRequest{}), model.Inventory)
-	}
+	m.Post("/inventory", binding.Json(halib.InventoryRequest{}), model.Inventory)
 	m.Post("/monitor", binding.Json(halib.MonitorRequest{}), model.Monitor)
 	m.Post("/metric", binding.Json(halib.MetricRequest{}), model.Metric)
 	m.Post("/metric/append", binding.Json(halib.MetricAppendRequest{}), model.MetricAppend)

@@ -121,6 +121,13 @@ func ExecCommandCombinedOutput(command string, option string) (int, string, erro
 		Duration:  commandTimeout * time.Second,
 		KillAfter: halib.CommandKillAfterSeconds * time.Second,
 	}
+	if runtime.GOOS == "windows" {
+		tio = &timeout.Timeout{
+			Cmd:       exec.Command("powershell.exe", commandWithOptions),
+			Duration:  commandTimeout * time.Second,
+			KillAfter: halib.CommandKillAfterSeconds * time.Second,
+		}
+	}
 	out := &bytes.Buffer{}
 	tio.Cmd.Stdout = out
 	tio.Cmd.Stderr = out
