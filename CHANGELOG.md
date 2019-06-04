@@ -1,3 +1,7 @@
+### 3.1.0 (Thu May 30 16:47:25 2019 +0900)
+
+- Merge pull request #84 from heartbeatsjp/inventory-on-windows (Thu May 30 16:47:25 2019 +0900) d52253a
+
 ### 3.0.0 (Tue May 21 15:15:23 2019 +0900)
 
 - Merge pull request #80 from l3msh0/handle-server-error (Fri Apr 12 09:38:04 2019 +0900) c008887
