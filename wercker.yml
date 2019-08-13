@@ -4,6 +4,9 @@ build:
   steps:
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
+    - script:
+        name: "install zip"
+        code: sudo apt-get update -y && apt-get install -y zip
     - script: 
         name: "dep ensure"
         code: "dep ensure && dep status"
@@ -57,7 +60,7 @@ build:
             DIST_DIR="${WERCKER_OUTPUT_DIR:?}/dist"
             mkdir ${DIST_DIR:?} || true
             cd ${WERCKER_OUTPUT_DIR:?}/pkg
-            find . -mindepth 1 -maxdepth 1 -type d | while read line; do tar zcfp ${DIST_DIR:?}/$line.tar.gz ${line:?} ; done
+            find . -mindepth 1 -maxdepth 1 -type d | while read line; do if $(echo $line | grep -q windows) ; then zip -r ${DIST_DIR:?}/$line.zip ${line:?}; else tar zcfp ${DIST_DIR:?}/$line.tar.gz ${line:?} ; fi ; done
             cd ${DIST_DIR:?}
             md5sum * > MD5SUM
 daemontest:
