@@ -4,6 +4,9 @@ build:
   steps:
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
+    - script:
+        name: "install zip"
+        code: sudo apt-get update -y && apt-get install -y zip
     - script: 
         name: "dep ensure"
         code: "dep ensure && dep status"
