@@ -86,7 +86,7 @@ $ sudo yum install epel-release
 $ sudo yum install nagios-plugins-all
 $ go get -dv github.com/heartbeatsjp/happo-agent
 $ cd $GOHOME/src/bin
-$ openssl genrsa -aes128 -out happo-agent.key 2048
+$ openssl genrsa -out happo-agent.key 2048
 $ openssl req -new -key happo-agent.key -sha256 -out happo.csr
 $ openssl x509 -in happo-agent.csr -days 3650 -req -signkey happo.key -sha256 -out happo.pub
 $ touch metrics.yaml

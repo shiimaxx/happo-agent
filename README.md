@@ -84,7 +84,7 @@ $ go get -dv github.com/heartbeatsjp/happo-agent
 $ sudo install $GOHOME/src/bin/happo-agent /usr/local/bin/happo-agent
 $ sudo install -d -m 755 /etc/happo
 $ cd /etc/happo
-$ sudo openssl genrsa -aes128 -out happo-agent.key 2048
+$ sudo openssl genrsa -out happo-agent.key 2048
 $ sudo openssl req -new -key happo-agent.key -sha256 -out happo-agent.csr
 $ sudo openssl x509 -in happo-agent.csr -days 3650 -req -signkey happo-agent.key -sha256 -out happo-agent.pub
 $ sudo touch metrics.yaml
