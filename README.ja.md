@@ -286,14 +286,17 @@ OK
     - proxy_hostport:
         - (配列) 踏み台サーバのIP:Port 多段可能
     - request_type: どのURIを実行するか
-    - request_json: 監視対象サーバに届けるJSON
+    - request_json: 監視対象サーバに送信するJSONをBase64エンコードした文字列
 - 返り値の形式
     - JSON
 - 返り値の変数
     - 実行したURLのレスポンスに従います
 
 ```
-$ wget -q --no-check-certificate -O - https://192.0.2.1:6777/proxy --post-data='{"proxy_hostport": ["198.51.100.1:6777"], "request_type": "monitor", "request_json": "{\"apikey\": \"\", \"plugin_name\": \"check_procs\", \"plugin_option\": \"-w 100 -c 200\"}"}'
+$ echo -n '{"apikey":"","plugin_name":"check_procs","plugin_option":"-w 100 -c 200"}' | base64
+eyJhcGlrZXkiOiIiLCJwbHVnaW5fbmFtZSI6ImNoZWNrX3Byb2NzIiwicGx1Z2luX29wdGlvbiI6Ii13IDEwMCAtYyAyMDAifQ==
+
+$ wget -q --no-check-certificate -O - https://192.0.2.1:6777/proxy --post-data='{"proxy_hostport": ["198.51.100.1:6777"], "request_type": "monitor", "request_json": "eyJhcGlrZXkiOiIiLCJwbHVnaW5fbmFtZSI6ImNoZWNrX3Byb2NzIiwicGx1Z2luX29wdGlvbiI6Ii13IDEwMCAtYyAyMDAifQ=="}'
 {"return_value":1,"message":"PROCS WARNING: 168 processes\n"}
 ```
 

@@ -276,7 +276,7 @@ Use agent bastion(proxy) mode.
     - proxy\_hostport:
         - (Array) bastion_ip:port. It can multiple define.
     - request\_type: request type (e.g. `monitor`)
-    - request\_json: Send JSON string to server.
+    - request\_json: Base64 encoded JSON string to be sent to destination host.
 - Return format
     - JSON
 - Return variables
@@ -292,7 +292,10 @@ If destination host is AutoScaling instance, it will behave as follows.
         - dummy response: `{"return_value":0,"message":"<alias> has not been assigned Instance\n"}`
 
 ```
-$ wget -q --no-check-certificate -O - https://192.0.2.1:6777/proxy --post-data='{"proxy_hostport": ["198.51.100.1:6777"], "request_type": "monitor", "request_json": "{\"apikey\": \"\", \"plugin_name\": \"check_procs\", \"plugin_option\": \"-w 100 -c 200\"}"}'
+$ echo -n '{"apikey":"","plugin_name":"check_procs","plugin_option":"-w 100 -c 200"}' | base64
+eyJhcGlrZXkiOiIiLCJwbHVnaW5fbmFtZSI6ImNoZWNrX3Byb2NzIiwicGx1Z2luX29wdGlvbiI6Ii13IDEwMCAtYyAyMDAifQ==
+
+$ wget -q --no-check-certificate -O - https://192.0.2.1:6777/proxy --post-data='{"proxy_hostport": ["198.51.100.1:6777"], "request_type": "monitor", "request_json": "eyJhcGlrZXkiOiIiLCJwbHVnaW5fbmFtZSI6ImNoZWNrX3Byb2NzIiwicGx1Z2luX29wdGlvbiI6Ii13IDEwMCAtYyAyMDAifQ=="}'
 {"return_value":1,"message":"PROCS WARNING: 168 processes\n"}
 ```
 
