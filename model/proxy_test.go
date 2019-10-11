@@ -2,9 +2,11 @@ package model
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -170,6 +172,12 @@ func TestProxy1(t *testing.T) {
 	ts := httptest.NewTLSServer(
 		http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
+				body, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					assert.FailNow(t, err.Error())
+				}
+				expected := `{"apikey": "", "plugin_name": "monitor_test_plugin", "plugin_option": "0"}`
+				assert.Equal(t, string(body), expected)
 				fmt.Fprint(w, `{"return_value":0,"message":"ok"}`)
 			}))
 	defer ts.Close()
@@ -179,12 +187,19 @@ func TestProxy1(t *testing.T) {
 	host := found[2]
 	port, _ := strconv.Atoi(found[3])
 
+	var content string
+	rawContent := `{"apikey": "", "plugin_name": "monitor_test_plugin", "plugin_option": "0"}`
+	content = base64.StdEncoding.EncodeToString([]byte(rawContent))
+
+	// This line lets the test fail because `/proxy` only accepts base64 encoded string as request_json
+	// content = `{\"apikey\": \"\", \"plugin_name\": \"monitor_test_plugin\", \"plugin_option\": \"0\"}`
+
 	requestJSON := fmt.Sprintf(`{
 		"proxy_hostport": ["%s:%d"],
 		"request_type": "monitor",
 		"request_json":
-			"{\"apikey\": \"\", \"plugin_name\": \"monitor_test_plugin\", \"plugin_option\": \"0\"}"
-	}`, host, port)
+			"%s"
+	}`, host, port, content)
 	reader := bytes.NewReader([]byte(requestJSON))
 
 	req, _ := http.NewRequest("POST", "/proxy", reader)
