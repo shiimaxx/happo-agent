@@ -1,9 +1,17 @@
-box: "netmarkjp/golang-build:1.9.4"
+box: "golang:1.13.3"
 command-timeout: 60
 build: 
   steps:
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
+    - script: 
+        name: "go get module"
+        code: |
+            go get -u github.com/golang/dep/cmd/dep
+            go get -u golang.org/x/tools/cmd/goimports
+            go get -u github.com/mitchellh/gox
+            go get -u github.com/haya14busa/goverage       
+            go get -u golang.org/x/lint/golint
     - script:
         name: "install zip"
         code: sudo apt-get update -y && apt-get install -y zip
