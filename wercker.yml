@@ -1,4 +1,4 @@
-box: "netmarkjp/golang-build:1.9.4"
+box: "netmarkjp/golang-build:1.13"
 command-timeout: 60
 build: 
   steps:
