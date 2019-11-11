@@ -8,9 +8,6 @@ build:
         name: "install zip"
         code: sudo apt-get update -y && apt-get install -y zip
     - script: 
-        name: "dep ensure"
-        code: "dep ensure && dep status"
-    - script: 
         name: "goimports"
         code: |
             GOFILES=$(find . -type f -name "*.go" | grep -vE '\./(.git|.wercker|vendor)' | xargs echo)
@@ -67,9 +64,6 @@ daemontest:
     steps: 
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
-    - script: 
-        name: "dep ensure"
-        code: "dep ensure && dep status"
     - script: 
         name: "install test plugin"
         code: |
