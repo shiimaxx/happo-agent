@@ -64,6 +64,8 @@ func ExecCommand(command string, option string) (int, string, string, error) {
 		KillAfter: halib.CommandKillAfterSeconds * time.Second,
 	}
 	if runtime.GOOS == "windows" {
+		// Force last command's exit code to be PowerShell's exit code
+		commandWithOptions += "; exit $LastExitCode"
 		tio = &timeout.Timeout{
 			Cmd:       exec.Command("powershell.exe", commandWithOptions),
 			Duration:  commandTimeout * time.Second,
