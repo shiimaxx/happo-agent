@@ -162,7 +162,7 @@ func saveMachineState() error {
 
 		// logging
 		unixTime, _ := strconv.Atoi(strings.SplitN(string(key), "-", 2)[1])
-		log.Warn("retire old metrics: key=%v(%v)\n", string(key), time.Unix(int64(unixTime), 0))
+		log.Warn(fmt.Sprintf("retire old metrics: key=%v(%v)\n", string(key), time.Unix(int64(unixTime), 0)))
 		// if write value to log, log become too large...
 	}
 	iter.Release()

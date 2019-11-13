@@ -128,7 +128,7 @@ func SaveMetrics(now time.Time, metricsData []halib.MetricsData) error {
 		expired := []halib.MetricsData{}
 		dec := gob.NewDecoder(bytes.NewReader(value))
 		dec.Decode(&expired)
-		log.Warn("retire old metrics: key=%v(%v), value=%v\n", string(key), time.Unix(int64(unixTime), 0), expired)
+		log.Warn(fmt.Sprintf("retire old metrics: key=%v(%v), value=%v\n", string(key), time.Unix(int64(unixTime), 0), expired))
 	}
 	iter.Release()
 

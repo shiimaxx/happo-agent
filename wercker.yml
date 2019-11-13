@@ -1,4 +1,4 @@
-box: "netmarkjp/golang-build:1.9.4"
+box: "netmarkjp/golang-build:1.13"
 command-timeout: 60
 build: 
   steps:
@@ -7,9 +7,6 @@ build:
     - script:
         name: "install zip"
         code: sudo apt-get update -y && apt-get install -y zip
-    - script: 
-        name: "dep ensure"
-        code: "dep ensure && dep status"
     - script: 
         name: "goimports"
         code: |
@@ -67,9 +64,6 @@ daemontest:
     steps: 
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
-    - script: 
-        name: "dep ensure"
-        code: "dep ensure && dep status"
     - script: 
         name: "install test plugin"
         code: |

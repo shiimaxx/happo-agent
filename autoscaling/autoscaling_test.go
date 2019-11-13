@@ -811,7 +811,7 @@ func TestJoinAutoScalingGroup1(t *testing.T) {
 		isNormalTest           bool
 	}{
 		{
-			name: "default",
+			name:                   "default",
 			ec2MetaDataisAvailable: true,
 			ec2MetaDatahasError:    false,
 			statusCode:             http.StatusOK,
@@ -841,7 +841,7 @@ func TestJoinAutoScalingGroup1(t *testing.T) {
 			isNormalTest: true,
 		},
 		{
-			name: "error response",
+			name:                   "error response",
 			ec2MetaDataisAvailable: true,
 			ec2MetaDatahasError:    false,
 			statusCode:             http.StatusInternalServerError,
@@ -850,7 +850,7 @@ func TestJoinAutoScalingGroup1(t *testing.T) {
 			isNormalTest:           false,
 		},
 		{
-			name: "ec2metadata is not available",
+			name:                   "ec2metadata is not available",
 			ec2MetaDataisAvailable: false,
 			ec2MetaDatahasError:    false,
 			dummyResponse:          statusErrorResponse,
@@ -858,7 +858,7 @@ func TestJoinAutoScalingGroup1(t *testing.T) {
 			isNormalTest:           false,
 		},
 		{
-			name: "ec2metadata has error",
+			name:                   "ec2metadata has error",
 			ec2MetaDataisAvailable: true,
 			ec2MetaDatahasError:    true,
 			dummyResponse:          statusErrorResponse,
@@ -925,7 +925,7 @@ func TestLeaveAutoScalingGroup(t *testing.T) {
 		isNormalTest           bool
 	}{
 		{
-			name: "default",
+			name:                   "default",
 			ec2MetaDataisAvailable: true,
 			ec2MetaDatahasError:    false,
 			statusCode:             http.StatusOK,
@@ -933,7 +933,7 @@ func TestLeaveAutoScalingGroup(t *testing.T) {
 			isNormalTest:           true,
 		},
 		{
-			name: "error response",
+			name:                   "error response",
 			ec2MetaDataisAvailable: true,
 			ec2MetaDatahasError:    false,
 			statusCode:             http.StatusInternalServerError,
@@ -941,14 +941,14 @@ func TestLeaveAutoScalingGroup(t *testing.T) {
 			isNormalTest:           false,
 		},
 		{
-			name: "ec2metadata is not available",
+			name:                   "ec2metadata is not available",
 			ec2MetaDataisAvailable: false,
 			ec2MetaDatahasError:    false,
 			dummyResponse:          statusErrorResponse,
 			isNormalTest:           false,
 		},
 		{
-			name: "ec2metadata has error",
+			name:                   "ec2metadata has error",
 			ec2MetaDataisAvailable: true,
 			ec2MetaDatahasError:    true,
 			dummyResponse:          statusErrorResponse,
