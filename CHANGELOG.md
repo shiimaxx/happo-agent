@@ -1,3 +1,11 @@
+### 3.1.1 (Wed Nov 13 12:40:19 2019 +0900)
+
+- Merge pull request #89 from l3msh0/powershell-exitcode (Wed Nov 13 12:40:19 2019 +0900) 9479647
+- Merge pull request #88 from heartbeatsjp/dep-to-gomod (Mon Nov 11 10:14:51 2019 +0900) b2ca1f9
+- Merge pull request #87 from heartbeatsjp/update_wercker (Mon Nov 11 09:59:25 2019 +0900) 918d9df
+- Merge pull request #86 from l3msh0/fix-readme (Fri Oct 11 12:55:05 2019 +0900) 0defcd1
+- Merge pull request #85 from shiimaxx/werkcer-windows-zip (Wed Aug 14 08:37:58 2019 +0900) 8a9b069
+
 ### 3.1.0 (Thu May 30 16:47:25 2019 +0900)
 
 - Merge pull request #84 from heartbeatsjp/inventory-on-windows (Thu May 30 16:47:25 2019 +0900) d52253a
