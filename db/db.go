@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/heartbeatsjp/happo-agent/util"
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/errors"
 )
 
 var (
@@ -25,7 +26,19 @@ func Open(dbfile string) {
 	var err error
 	DB, err = leveldb.OpenFile(dbfile, nil)
 	if err != nil {
-		log.Fatalln(err)
+		if errors.IsCorrupted(err) {
+			log.Errorf("detect corrupted manifest file in %s: %s\n", dbfile, err)
+			log.Errorln("attempt recover for", dbfile)
+
+			DB, err = leveldb.RecoverFile(dbfile, nil)
+			if err != nil {
+				log.Fatalln("recover failed: ", err)
+			}
+
+			log.Errorln("recover corrupted manifest file is succeed")
+		} else {
+			log.Fatalln(err)
+		}
 	}
 }
 
