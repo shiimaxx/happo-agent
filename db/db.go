@@ -35,7 +35,7 @@ func Open(dbfile string) {
 				log.Fatalln("recover failed: ", err)
 			}
 
-			log.Errorln("recover corrupted manifest file is succeed")
+			log.Errorln("recover corrupted manifest file succeeded")
 		} else {
 			log.Fatalln(err)
 		}

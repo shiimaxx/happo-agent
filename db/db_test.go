@@ -58,7 +58,7 @@ func TestOpen(t *testing.T) {
 	assert.Empty(t, stream.String())
 }
 
-func TestOpne_corrupted(t *testing.T) {
+func TestOpen_corrupted(t *testing.T) {
 	// recovery and open the db file without faital error
 
 	logger := util.HappoAgentLogger()
@@ -75,5 +75,5 @@ func TestOpne_corrupted(t *testing.T) {
 
 	assert.Contains(t, stream.String(), fmt.Sprintf("[error] detect corrupted manifest file in %s", testDB))
 	assert.Contains(t, stream.String(), fmt.Sprintf("[error] attempt recover for %s", testDB))
-	assert.Contains(t, stream.String(), "recover corrupted manifest file is succeed")
+	assert.Contains(t, stream.String(), "recover corrupted manifest file succeeded")
 }
