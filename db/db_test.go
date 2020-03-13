@@ -45,6 +45,16 @@ func copyTestDB(t *testing.T) string {
 	return copied
 }
 
+func makeCorrupt(t *testing.T, dbfile string) {
+	t.Helper()
+
+	// make corrupt manifest file
+	manifest := path.Join(dbfile, "MANIFEST-000000")
+	if err := os.Truncate(manifest, 1); err != nil {
+		t.Fatal("truncate file failed:", err)
+	}
+}
+
 func TestOpen(t *testing.T) {
 	// open the db file without faital error
 
@@ -66,14 +76,27 @@ func TestOpen_corrupted(t *testing.T) {
 	logger.Out = stream
 
 	testDB := copyTestDB(t)
-	// make corrupt manifest file
-	manifest := path.Join(testDB, "MANIFEST-000000")
-	if err := os.Truncate(manifest, 1); err != nil {
-		t.Fatal("truncate file failed:", err)
-	}
+	makeCorrupt(t, testDB)
 	Open(testDB)
 
 	assert.Contains(t, stream.String(), fmt.Sprintf("[error] detect corrupted manifest file in %s", testDB))
 	assert.Contains(t, stream.String(), fmt.Sprintf("[error] attempt recover for %s", testDB))
 	assert.Contains(t, stream.String(), "recover corrupted manifest file succeeded")
+}
+
+func TestOpen_ReadWriteDBAfterRecover(t *testing.T) {
+	testDB := copyTestDB(t)
+	makeCorrupt(t, testDB)
+	Open(testDB)
+
+	if err := DB.Put([]byte("test-key"), []byte("test-value"), nil); err != nil {
+		t.Fatal("wirte database failed:", err)
+	}
+
+	got, err := DB.Get([]byte("test-key"), nil)
+	if err != nil {
+		t.Fatal("read database failed:", err)
+	}
+
+	assert.Equal(t, []byte("test-value"), got)
 }
