@@ -1,3 +1,7 @@
+### [3.1.2](https://github.com/heartbeatsjp/happo-agent/compare/3.1.1...3.1.2) (2020-03-13)
+
+* Make a recovery when detecting a corrupted manifest file [#91](https://github.com/heartbeatsjp/happo-agent/pull/91) ([shiimaxx](https://github.com/shiimaxx))
+
 ### 3.1.1 (Wed Nov 13 12:40:19 2019 +0900)
 
 - Merge pull request #89 from l3msh0/powershell-exitcode (Wed Nov 13 12:40:19 2019 +0900) 9479647
