@@ -9,20 +9,10 @@ build:
         code: sudo apt-get update -y && apt-get install -y zip
     - script: 
         name: "goimports"
-        code: |
-            GOFILES=$(find . -type f -name "*.go" | grep -vE '\./(.git|.wercker|vendor)' | xargs echo)
-            goimports -d -e ${GOFILES}
-            if [[ $(goimports -d -e ${GOFILES}) == "" ]]; then echo pass; else echo failed; exit 1; fi
+        code: make imports
     - script: 
         name: "golint"
-        code: |
-            GODIRECTORIES=". $(find . -type f -name '*.go' | grep -vE '\./(.git|.wercker|vendor)' | grep './.*/.*' | sed 's@[^/]*.go@...@' | sort | uniq | xargs echo)"
-            for d in "${GODIRECTORIES}" ; do golint -set_exit_status $d; done
-    - script: 
-        name: "go vet"
-        code: |
-            GODIRECTORIES=". $(find . -type f -name '*.go' | grep -vE '\./(.git|.wercker|vendor)' | grep './.*/.*' | sed 's@[^/]*.go@...@' | sort | uniq | xargs echo)"
-            go vet ${GODIRECTORIES:?}
+        code: make lint
     - script: 
         name: "install test plugin"
         code: |
@@ -31,18 +21,17 @@ build:
             install -m 755 model/monitor_test_sleep /usr/local/bin/monitor_test_sleep
     - script: 
         name: "go test"
-        code: |
-            GODIRECTORIES=". $(find . -type f -name '*.go' | grep -vE '\./(.git|.wercker|vendor)' | grep './.*/.*' | sed 's@[^/]*.go@...@' | sort | uniq | xargs echo)"
-            go test ${GODIRECTORIES:?}
-    - tcnksm/gox:
-        os: "linux windows"
-        arch: "amd64"
-        ldflags: "-X main.Version=$(git describe --tags)"
+        code: make test
+    - script: 
+        name: "build cross"
+        code: make build_cross
     - script: 
         name: "test subcommands"
         code: |
             set -xe
-            BINARY="${WERCKER_OUTPUT_DIR:?}/pkg/linux_amd64/happo-agent"
+            cd dist
+            tar zxf happo-agent_$(git describe --tags)_linux_amd64.tar.gz
+            BINARY="./happo-agent_$(git describe --tags)_linux_amd64/happo-agent"
             ${BINARY:?} -h
             ${BINARY:?} -v
             ${BINARY:?} daemon -h
@@ -51,13 +40,13 @@ build:
             ${BINARY:?} remove -h
             ${BINARY:?} append_metric -h
             ${BINARY:?} help
-    - script:
+    - script: 
         name: "archive"
         code: |
             DIST_DIR="${WERCKER_OUTPUT_DIR:?}/dist"
             mkdir ${DIST_DIR:?} || true
-            cd ${WERCKER_OUTPUT_DIR:?}/pkg
-            find . -mindepth 1 -maxdepth 1 -type d | while read line; do if $(echo $line | grep -q windows) ; then zip -r ${DIST_DIR:?}/$line.zip ${line:?}; else tar zcfp ${DIST_DIR:?}/$line.tar.gz ${line:?} ; fi ; done
+            cd dist
+            find . -mindepth 1 -maxdepth 1 -type f | while read line; do cp -p ${line} ${DIST_DIR:?}/ ; done
             cd ${DIST_DIR:?}
             md5sum * > MD5SUM
 daemontest:
