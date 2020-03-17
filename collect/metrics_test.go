@@ -1,7 +1,6 @@
 package collect
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -15,8 +14,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/storage"
 )
 
-const TestConfigFile = "./metrics_test.yaml"
-const TestEmptyConfigFile = "./metrics_test_empty.yaml"
+const TestConfigFile = "./testdata/metrics_test.yaml"
+const TestEmptyConfigFile = "./testdata/metrics_test_empty.yaml"
 const TestPlugin = "metrics_test_plugin"
 
 var ConfigData = halib.MetricConfig{
@@ -40,6 +39,10 @@ var ConfigData = halib.MetricConfig{
 			},
 		},
 	},
+}
+
+func init() {
+	SensuPluginPaths = "./testdata/"
 }
 
 func TestMetrics1(t *testing.T) {
@@ -79,7 +82,7 @@ func TestGetCollectedMetricsWithLimit1(t *testing.T) {
 func TestGetMetrics1(t *testing.T) {
 	ret, err := getMetrics(TestPlugin, "")
 	assert.NotNil(t, ret)
-	assert.Contains(t, ret, "usr.local.bin.metrics_test_plugin")
+	assert.Contains(t, ret, "collect.metrics.test")
 	assert.Nil(t, err)
 }
 
@@ -89,7 +92,6 @@ func TestGetMetrics2(t *testing.T) {
 }
 
 func TestGetMetrics3(t *testing.T) {
-	SensuPluginPaths = fmt.Sprintf("%s,/usr/bin,/bin", SensuPluginPaths)
 	prevCommandTimeout := util.CommandTimeout
 
 	util.CommandTimeout = 1

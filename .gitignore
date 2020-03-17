@@ -10,3 +10,4 @@ vendor/
 debug
 .vscode/
 happo-agent_linux_amd64
+dist/

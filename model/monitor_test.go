@@ -16,6 +16,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	NagiosPluginPaths = "./testdata/"
+}
+
 func TestMonitor1(t *testing.T) {
 	// OK
 
@@ -173,7 +177,7 @@ func TestMonitor6(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, res.Code)
 	assert.Equal(t,
-		`{"return_value":127,"message":"stdout=, stderr=/bin/sh: 1: /usr/local/bin/notfound: not found\n"}`,
+		`{"return_value":127,"message":"stdout=, stderr=/bin/sh: 1: testdata/notfound: not found\n"}`,
 		res.Body.String(),
 	)
 }
