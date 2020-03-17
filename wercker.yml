@@ -1,25 +1,25 @@
 box: "netmarkjp/golang-build:1.13"
 command-timeout: 60
-build: 
+build:
   steps:
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
     - script:
         name: "install zip"
         code: sudo apt-get update -y && apt-get install -y zip
-    - script: 
+    - script:
         name: "goimports"
         code: make imports
-    - script: 
+    - script:
         name: "golint"
         code: make lint
-    - script: 
+    - script:
         name: "go test"
         code: make test
-    - script: 
+    - script:
         name: "build cross"
         code: make build_cross
-    - script: 
+    - script:
         name: "test subcommands"
         code: |
             set -xe
@@ -34,7 +34,7 @@ build:
             ${BINARY:?} remove -h
             ${BINARY:?} append_metric -h
             ${BINARY:?} help
-    - script: 
+    - script:
         name: "archive"
         code: |
             DIST_DIR="${WERCKER_OUTPUT_DIR:?}/dist"
@@ -44,10 +44,10 @@ build:
             cd ${DIST_DIR:?}
             md5sum * > MD5SUM
 daemontest:
-    steps: 
+    steps:
     - wercker/setup-go-workspace:
         package-dir: github.com/heartbeatsjp/happo-agent
-    - script: 
+    - script:
         name: "install test plugin"
         code: |
             install -m 755 collect/testdata/metrics_test_plugin /usr/local/bin/metrics_test_plugin
@@ -57,7 +57,7 @@ daemontest:
         os: "linux"
         arch: "amd64"
         ldflags: "-X main.Version=$(git describe --tags)"
-    - script: 
+    - script:
         name: "prepare test daemon behavior"
         code: |
             set -e
@@ -70,7 +70,7 @@ daemontest:
             touch metrics.yaml
             apt-get -y update
             apt-get -y install jq time bc
-    - script: 
+    - script:
         name: "test daemon behavior"
         code: |
             set -e
@@ -169,8 +169,8 @@ daemontest:
             echo -n "DB_DISK_USAGE_KB=${DB_DISK_USAGE_KB:?}"
             [[ $(echo "${DB_DISK_USAGE_KB:?} > ${DB_DISK_THRESHOLD_KB:?}" | bc) -eq 0 ]] && echo " OK" || (echo " NG(DB_DISK_USAGE_KB > ${DB_DISK_THRESHOLD_KB:?})" ; exit 1)
 deploy:
-    steps: 
-    - tcnksm/ghr: 
+    steps:
+    - tcnksm/ghr:
         input: dist
         replace: true
         token: $GITHUB_TOKEN
