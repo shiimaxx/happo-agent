@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -169,12 +170,35 @@ func (client *NodeAWSClient) GetInstanceMetadata() (string, string, error) {
 
 // GetAutoScalingGroupName return autoscaling group name
 func (client *NodeAWSClient) GetAutoScalingGroupName(instanceID string) (string, error) {
-	result, err := client.SvcAutoScaling.DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
+	input := &autoscaling.DescribeAutoScalingGroupsInput{}
+	result, err := client.SvcAutoScaling.DescribeAutoScalingGroups(input)
 	if err != nil {
 		return "", err
 	}
 
-	for _, a := range result.AutoScalingGroups {
+	groups := []*autoscaling.Group{}
+	groups = append(groups, result.AutoScalingGroups...)
+	for {
+		// AutoScaling Groups < 50
+		if result.NextToken == nil {
+			break
+		} else {
+			// AutoScaling Groups > 50
+			input.SetNextToken(*result.NextToken)
+			res, err := client.SvcAutoScaling.DescribeAutoScalingGroups(input)
+			if err != nil {
+				return "", err
+			}
+			groups = append(groups, res.AutoScalingGroups...)
+			if res.NextToken == nil {
+				break
+			}
+			input.SetNextToken(*res.NextToken)
+			time.Sleep(1 * time.Second)
+		}
+
+	}
+	for _, a := range groups {
 		for _, i := range a.Instances {
 			if *i.InstanceId == instanceID {
 				return *a.AutoScalingGroupName, nil
