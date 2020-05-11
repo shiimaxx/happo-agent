@@ -1,6 +1,7 @@
 package awsmock
 
 import (
+	"strconv"
 	"strings"
 
 	"fmt"
@@ -25,28 +26,43 @@ type MockAutoScalingClient struct {
 func (m *MockAutoScalingClient) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: []*autoscaling.Group{{}}}
 	if len(input.AutoScalingGroupNames) < 1 {
-		output.AutoScalingGroups[0].AutoScalingGroupName = aws.String("dummy-prod-ag")
-		output.AutoScalingGroups[0].Instances = []*autoscaling.Instance{
-			{InstanceId: aws.String("i-aaaaaa"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-bbbbbb"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-cccccc"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-dddddd"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-eeeeee"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-ffffff"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-gggggg"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-hhhhhh"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-iiiiii"), LifecycleState: aws.String("InService")},
-			{InstanceId: aws.String("i-jjjjjj"), LifecycleState: aws.String("InService")},
+		if input.NextToken == nil {
+			for i := 0; i < 50; i++ {
+				output.AutoScalingGroups = append(output.AutoScalingGroups, &autoscaling.Group{
+					AutoScalingGroupName: aws.String("null-stg-ag-" + strconv.Itoa(i)),
+					Instances:            []*autoscaling.Instance{},
+				})
+			}
+			output.NextToken = aws.String("AAAAAA-BBBBBB-CCCCCC")
+
+			return output, nil
 		}
-		output.AutoScalingGroups = append(output.AutoScalingGroups, &autoscaling.Group{
-			AutoScalingGroupName: aws.String("dummy-stg-ag"),
-			Instances: []*autoscaling.Instance{
-				{InstanceId: aws.String("i-kkkkkk"), LifecycleState: aws.String("InService")},
-				{InstanceId: aws.String("i-llllll"), LifecycleState: aws.String("InService")},
-				{InstanceId: aws.String("i-mmmmmm"), LifecycleState: aws.String("InService")},
-				{InstanceId: aws.String("i-nnnnnn"), LifecycleState: aws.String("InService")},
-			},
-		})
+		if *input.NextToken == "AAAAAA-BBBBBB-CCCCCC" {
+
+			output.AutoScalingGroups[0].AutoScalingGroupName = aws.String("dummy-prod-ag")
+			output.AutoScalingGroups[0].Instances = []*autoscaling.Instance{
+				{InstanceId: aws.String("i-aaaaaa"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-bbbbbb"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-cccccc"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-dddddd"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-eeeeee"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-ffffff"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-gggggg"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-hhhhhh"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-iiiiii"), LifecycleState: aws.String("InService")},
+				{InstanceId: aws.String("i-jjjjjj"), LifecycleState: aws.String("InService")},
+			}
+			output.AutoScalingGroups = append(output.AutoScalingGroups, &autoscaling.Group{
+				AutoScalingGroupName: aws.String("dummy-stg-ag"),
+				Instances: []*autoscaling.Instance{
+					{InstanceId: aws.String("i-kkkkkk"), LifecycleState: aws.String("InService")},
+					{InstanceId: aws.String("i-llllll"), LifecycleState: aws.String("InService")},
+					{InstanceId: aws.String("i-mmmmmm"), LifecycleState: aws.String("InService")},
+					{InstanceId: aws.String("i-nnnnnn"), LifecycleState: aws.String("InService")},
+				},
+			})
+			output.NextToken = nil
+		}
 		return output, nil
 	}
 
