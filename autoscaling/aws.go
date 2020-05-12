@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -176,15 +175,13 @@ func (client *NodeAWSClient) GetAutoScalingGroupName(instanceID string) (string,
 		return "", err
 	}
 
-	groups := []*autoscaling.Group{}
+	var groups []*autoscaling.Group
 	groups = append(groups, result.AutoScalingGroups...)
-	for {
-		// AutoScaling Groups < 50
-		if result.NextToken == nil {
-			break
-		} else {
-			// AutoScaling Groups > 50
-			input.SetNextToken(*result.NextToken)
+
+	// AutoScaling Groups > 50
+	if result.NextToken != nil {
+		input.SetNextToken(*result.NextToken)
+		for {
 			res, err := client.SvcAutoScaling.DescribeAutoScalingGroups(input)
 			if err != nil {
 				return "", err
@@ -194,9 +191,7 @@ func (client *NodeAWSClient) GetAutoScalingGroupName(instanceID string) (string,
 				break
 			}
 			input.SetNextToken(*res.NextToken)
-			time.Sleep(1 * time.Second)
 		}
-
 	}
 	for _, a := range groups {
 		for _, i := range a.Instances {
