@@ -26,6 +26,7 @@ type MockAutoScalingClient struct {
 func (m *MockAutoScalingClient) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: []*autoscaling.Group{{}}}
 	if len(input.AutoScalingGroupNames) < 1 {
+		// First
 		if input.NextToken == nil {
 			for i := 0; i < 50; i++ {
 				output.AutoScalingGroups = append(output.AutoScalingGroups, &autoscaling.Group{
@@ -37,7 +38,21 @@ func (m *MockAutoScalingClient) DescribeAutoScalingGroups(input *autoscaling.Des
 
 			return output, nil
 		}
+		// Second
 		if *input.NextToken == "AAAAAA-BBBBBB-CCCCCC" {
+
+			for i := 0; i < 50; i++ {
+				output.AutoScalingGroups = append(output.AutoScalingGroups, &autoscaling.Group{
+					AutoScalingGroupName: aws.String("null-prod-ag-" + strconv.Itoa(i)),
+					Instances:            []*autoscaling.Instance{},
+				})
+			}
+			output.NextToken = aws.String("DDDDDD-EEEEEE-FFFFFF")
+
+			return output, nil
+		}
+		// Last
+		if *input.NextToken == "DDDDDD-EEEEEE-FFFFFF" {
 
 			output.AutoScalingGroups[0].AutoScalingGroupName = aws.String("dummy-prod-ag")
 			output.AutoScalingGroups[0].Instances = []*autoscaling.Instance{
