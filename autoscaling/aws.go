@@ -170,29 +170,20 @@ func (client *NodeAWSClient) GetInstanceMetadata() (string, string, error) {
 // GetAutoScalingGroupName return autoscaling group name
 func (client *NodeAWSClient) GetAutoScalingGroupName(instanceID string) (string, error) {
 	input := &autoscaling.DescribeAutoScalingGroupsInput{}
-	result, err := client.SvcAutoScaling.DescribeAutoScalingGroups(input)
-	if err != nil {
-		return "", err
-	}
-
 	var groups []*autoscaling.Group
-	groups = append(groups, result.AutoScalingGroups...)
 
-	// AutoScaling Groups > 50
-	if result.NextToken != nil {
-		input.SetNextToken(*result.NextToken)
-		for {
-			res, err := client.SvcAutoScaling.DescribeAutoScalingGroups(input)
-			if err != nil {
-				return "", err
-			}
-			groups = append(groups, res.AutoScalingGroups...)
-			if res.NextToken == nil {
-				break
-			}
-			input.SetNextToken(*res.NextToken)
+	for {
+		result, err := client.SvcAutoScaling.DescribeAutoScalingGroups(input)
+		if err != nil {
+			return "", err
 		}
+		groups = append(groups, result.AutoScalingGroups...)
+		if result.NextToken == nil {
+			break
+		}
+		input.SetNextToken(*result.NextToken)
 	}
+
 	for _, a := range groups {
 		for _, i := range a.Instances {
 			if *i.InstanceId == instanceID {
