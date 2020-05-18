@@ -1,3 +1,8 @@
+### [3.1.3](https://github.com/heartbeatsjp/happo-agent/compare/3.1.2...3.1.3) (2020-05-14)
+
+* Bugfix/describeautoscalinggroups [#93](https://github.com/heartbeatsjp/happo-agent/pull/93) ([kurneko](https://github.com/kurneko))
+* Improve CI [#92](https://github.com/heartbeatsjp/happo-agent/pull/92) ([shiimaxx](https://github.com/shiimaxx))
+
 ### [3.1.2](https://github.com/heartbeatsjp/happo-agent/compare/3.1.1...3.1.2) (2020-03-13)
 
 * Make a recovery when detecting a corrupted manifest file [#91](https://github.com/heartbeatsjp/happo-agent/pull/91) ([shiimaxx](https://github.com/shiimaxx))
